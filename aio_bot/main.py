@@ -12,7 +12,7 @@ from aiogram.utils.markdown import hbold
 from pyrogram.types import User
 
 from models.Forms import SignUpForm
-from scripts.pyro_scripts import get_channels, send_message_to_tg, join_chats_to_tg, add_client, check_clinet_code
+from aio_bot.scripts.pyro_scripts import get_channels, send_message_to_tg, join_chats_to_tg, add_client, check_clinet_code
 
 # Bot token can be obtained via https://t.me/BotFather
 TOKEN = "6651478266:AAFUIxBM52Z9tuhUC4tLFeWN3Snq8HVEERU"
