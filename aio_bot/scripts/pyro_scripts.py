@@ -71,7 +71,7 @@ def get_connection():
 def get_channels():
     channels = []
     path = os.getcwd()
-    channels_path = os.path.join(path, "channels.csv")
+    channels_path = os.path.join(path, "sender_bot", "aio_bot", "channels.csv")
     with open(channels_path, encoding='UTF-8') as r_file:
         file_reader = csv.DictReader(r_file, delimiter=";")
         for row in file_reader:
