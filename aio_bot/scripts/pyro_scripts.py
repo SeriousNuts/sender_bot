@@ -1,5 +1,6 @@
 import asyncio
 import csv
+import os
 
 from pyrogram import Client
 from pyrogram.errors import FloodWait, BadRequest, Forbidden, Flood, SessionPasswordNeeded
@@ -69,7 +70,9 @@ def get_connection():
 
 def get_channels():
     channels = []
-    with open("channels.csv", encoding='UTF-8') as r_file:
+    path = os.getcwd()
+    channels_path = os.path.join(path, "channels.csv")
+    with open(channels_path, encoding='UTF-8') as r_file:
         file_reader = csv.DictReader(r_file, delimiter=";")
         for row in file_reader:
             channels.append(row['ссылка на канал'])
