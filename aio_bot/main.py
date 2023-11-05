@@ -11,12 +11,13 @@ from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.utils.markdown import hbold
 from pyrogram.types import User
 
-from models.Forms import SignUpForm
+from aio_bot.models.Forms import SignUpForm
 from scripts.pyro_scripts import get_channels, send_message_to_tg, join_chats_to_tg, add_client,\
     check_clinet_code
 
 # Bot token can be obtained via https://t.me/BotFather
-TOKEN = "6651478266:AAFUIxBM52Z9tuhUC4tLFeWN3Snq8HVEERU"
+#TOKEN = "6651478266:AAFUIxBM52Z9tuhUC4tLFeWN3Snq8HVEERU"
+TOKEN = "6177239176:AAG3xEWElE2TIviBGIcz2GGrQodRGF952zY"#тестовый
 PAYMENTS_TOKEN = "1744374395:TEST:f1ba47f5bea23611a847"
 PRICE = types.LabeledPrice(label="Подписка на 1 месяц", amount=50 * 100)  # в копейках (руб)
 
