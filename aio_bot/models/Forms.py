@@ -9,3 +9,8 @@ class SignUpForm(StatesGroup):
     user_input_code = State()
     app = State()
     chat_id = State()
+
+
+class StartSendingForm(StatesGroup):
+    text = State()
+    interval = State()

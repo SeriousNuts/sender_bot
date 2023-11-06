@@ -11,14 +11,14 @@ from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.utils.markdown import hbold
 from pyrogram.types import User
 
-from aio_bot.models.Forms import SignUpForm
-from scripts.pyro_scripts import get_channels, send_message_to_tg, join_chats_to_tg, add_client,\
-    check_clinet_code
+from aio_bot import config, buttons
+from aio_bot.models.Forms import StartSendingForm
+from scripts.pyro_scripts import get_channels, send_message_to_tg, join_chats_to_tg, add_account, \
+    check_client_code
+from psql_core.utills import *
 
-# Bot token can be obtained via https://t.me/BotFather
-#TOKEN = "6651478266:AAFUIxBM52Z9tuhUC4tLFeWN3Snq8HVEERU"
-TOKEN = "6177239176:AAG3xEWElE2TIviBGIcz2GGrQodRGF952zY"#тестовый
-PAYMENTS_TOKEN = "1744374395:TEST:f1ba47f5bea23611a847"
+TOKEN = config.TOKEN
+PAYMENTS_TOKEN = config.PAYMENTS_TOKEN
 PRICE = types.LabeledPrice(label="Подписка на 1 месяц", amount=50 * 100)  # в копейках (руб)
 
 # All handlers should be attached to the Router (or Dispatcher)
@@ -65,64 +65,34 @@ async def successful_payment(message: Message):
                            f"{message.successful_payment.currency} прошел успешно!!!")
 
 
-@dp.message(Command("sign_up"))
-async def cmd_sign_up(message: Message, state: FSMContext) -> None:
-    msg = await message.answer("Введите APP_ID", reply_markup=ReplyKeyboardRemove())
-    await state.update_data(chat_id=str(msg.from_user.id))
-    await state.set_state(SignUpForm.app_id)
+@dp.message(F.text.lower() == "начать рассылку")
+async def get_text(message: Message, state: FSMContext) -> None:
+    await message.reply(f"Введите сообщение которое будем рассылать", reply_markup=ReplyKeyboardRemove())
+    await state.set_state(StartSendingForm.text)
 
 
-@dp.message(SignUpForm.app_id)
-async def app_id_get(message: Message, state: FSMContext) -> None:
-    await state.update_data(app_id=int(message.text.lower()))
-    await message.answer("Теперь введите API_HASH", reply_markup=ReplyKeyboardRemove())
-    await state.set_state(SignUpForm.api_hash)
+@dp.message(StartSendingForm.text)
+async def get_interval(message: Message, state: FSMContext) -> None:
+    await state.update_data(text=message.text)
+    await message.reply(f"Отлично, текст записал", reply_markup=ReplyKeyboardRemove())
+    await message.reply(f"Теперь введите интервал в минутах для рассылки", reply_markup=ReplyKeyboardRemove())
+    await state.set_state(StartSendingForm.interval)
 
 
-@dp.message(SignUpForm.api_hash)
-async def api_hash_get(message: Message, state: FSMContext) -> None:
-    await state.update_data(api_hash=message.text.lower())
-    await message.answer("Теперь введите номер телефона", reply_markup=ReplyKeyboardRemove())
-    await state.set_state(SignUpForm.phone_number)
-
-
-@dp.message(SignUpForm.phone_number)
-async def api_hash_get(message: Message, state: FSMContext) -> None:
-    await state.update_data(phone_number=message.text.lower())
-    user_data = await state.get_data()
-    app_code, app = await add_client(app_id_tg=user_data["app_id"], api_hash_tg=user_data["api_hash"],
-                                     phone_number_tg=message.text.lower(),
-                                     chat_id_tg=user_data["chat_id"])
-    await state.update_data(app=app, phone_number=message.text.lower(), phone_code_hash=app_code)
-    await message.answer("введите код", reply_markup=ReplyKeyboardRemove())
-    await state.set_state(SignUpForm.user_input_code)
-
-
-@dp.message(SignUpForm.user_input_code)
-async def api_hash_get(message: Message, state: FSMContext) -> None:
-    await state.update_data(user_input_code=message.text.lower())
-    user_data = await state.get_data()
-    check_code = await check_clinet_code(code=user_data["user_input_code"], app=user_data["app"],
-                                         phone_hash_tg=user_data["phone_code_hash"],
-                                         phone_number_tg=user_data["phone_number"])
-    if not type(check_code) is User:
-        await message.answer(f"Регистрация не удалась. Причина :  {str(check_code)}")
-    else:
-        await message.answer(f"Пользователь {check_code.username} успешно зарегистрирован")
-    await state.clear()
+@dp.message(StartSendingForm.interval)
+async def start_sending(message: Message, state: FSMContext) -> None:
+    await state.update_data(interval=message.text)
+    data = await state.get_data()
+    interval = data["interval"]
+    text = data["text"]
+    await insert_schedule(period=interval, message_text=text)
+    await message.reply(f"Будем отправлять ваш текст раз в {interval} минут", reply_markup=ReplyKeyboardRemove())
+    await message.reply(f"Начинаю отправку", reply_markup=ReplyKeyboardRemove())
 
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
-    """
-    This handler receives messages with `/start` command
-    """
-    # Most event objects have aliases for API methods that can be called in events' context
-    # For example if you want to answer to incoming message you can use `message.answer(...)` alias
-    # and the target chat will be passed to :ref:`aiogram.methods.send_message.SendMessage`
-    # method automatically or call API method directly via
-    # Bot instance: `bot.send_message(chat_id=message.chat.id, ...)`
-    await message.answer(f"Hello, {hbold(message.from_user.full_name)}!")
+    await message.reply(f"Hello, {hbold(message.from_user.full_name)}!", reply_markup=buttons.start_sending_keyboard)
 
 
 @dp.message(Command("channel_list"))
@@ -150,21 +120,6 @@ async def send_messages(message: Message) -> None:
         joined_chat = await join_chats_to_tg(ch)
         msg = await msg.edit_text(f"{msg.text}\n {joined_chat}", disable_web_page_preview=True)
     await message.answer(f"Присоеденение к чатам закончено")
-
-
-# @dp.message()
-# async def echo_handler(message: types.Message) -> None:
-#     """
-#     Handler will forward receive a message back to the sender
-#
-#     By default, message handler will handle all message types (like a text, photo, sticker etc.)
-#     """
-#     try:
-#         # Send a copy of the received message
-#         await message.send_copy(chat_id=message.chat.id)
-#     except TypeError:
-#         # But not all the types is supported to be copied so need to handle it
-#         await message.answer("Nice try!")
 
 
 async def main() -> None:

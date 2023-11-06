@@ -1,23 +1,15 @@
 import asyncio
 import csv
+from datetime import datetime
 import os
+import uuid
 
 from pyrogram import Client
 from pyrogram.errors import FloodWait, BadRequest, Forbidden, Flood, SessionPasswordNeeded
-
-# config = configparser.ConfigParser()
-# config.read("config.ini")
-# logging.basicConfig(level=logging.INFO, filename="py_log.log", filemode="w")
-
-# запасной аккаунт
-# account_name = "second_account"
-# app_id = 28549543
-# api_hash = "5901209df83fcf66e27b4cd07f9b81b2"
-
-# основной аккаунт
+from aio_bot.scripts.pyro_models import Message
 account_name = "my_account"
-app_id = 14923126
-api_hash = "be9bd4712433dd43cd082882c344064a"
+app_id = 28549543
+api_hash = "5901209df83fcf66e27b4cd07f9b81b2"
 
 mes = '🔥🔥🔥 ВНИМАНИЕ 🔥🔥🔥\n\n#продамрекламу #Продам\n\n🔘 Категория:\n#Познавательное, #История,\n\n📢 Канал: ' \
       'История и Секс. \n\nhttps://t.me/historiseks\n\n📈 Подписчиков : 13,9к.+-\nПросмотры за пост 3к+-\n\n💳 Цена  ' \
@@ -29,8 +21,10 @@ mes = '🔥🔥🔥 ВНИМАНИЕ 🔥🔥🔥\n\n#продамрекламу
       '1/24-900 РУБ. \n\nОбращаться @A514848 '
 
 
-async def add_client(app_id_tg, api_hash_tg, phone_number_tg, chat_id_tg):
-    app = Client(str(chat_id_tg), api_id=app_id_tg, api_hash=api_hash_tg)
+# отправляем запрос на регистрацию
+async def add_account(app_id_tg, api_hash_tg, phone_number_tg):
+    name = str(uuid.uuid4())
+    app = Client(str(name), api_id=app_id_tg, api_hash=api_hash_tg)
     if app.is_connected:
         await app.disconnect()
     await app.connect()
@@ -41,7 +35,8 @@ async def add_client(app_id_tg, api_hash_tg, phone_number_tg, chat_id_tg):
         return e.NAME
 
 
-async def check_clinet_code(code, app, phone_number_tg, phone_hash_tg):
+# проверяем код подтверждения клиента
+async def check_client_code(code, app, phone_number_tg, phone_hash_tg):
     print("code", code)
     print("phone_hash_tg", phone_hash_tg)
     print("phone_number_tg", phone_number_tg)
@@ -59,14 +54,6 @@ async def check_clinet_code(code, app, phone_number_tg, phone_hash_tg):
     return result
 
 
-def construct_message():
-    message = "🔥🔥🔥 ВНИМАНИЕ 🔥🔥🔥\n\n#продамрекламу #Продам\n\n🔘 Категория:\n#Познавательное, #История, " \
-              "\n\n📢 Канал: История и Секс. \n\nhttps://t.me/historiseks\n\n📈 Подписчиков : 12.7к+-\nЖЦА\nПросмотры " \
-              "за пост 3к+ -\n\n💳 Цена  1/24-600\n                  2/24-650\n                  2/48-700\n\nВозможен " \
-              "ВП\n\nОбращаться @A514848 "
-    return message
-
-
 def get_connection():
     return Client("my_account", api_id=app_id, api_hash=api_hash)
 
@@ -82,32 +69,31 @@ def get_channels():
     return channels
 
 
-async def send_message_to_tg(ch):
-    sended_messages = []
-    text_message = mes
+async def send_message_to_tg(ch, text_message):
+    sended_messages = Message()
     app = Client(account_name, api_id=app_id, api_hash=api_hash)
     await app.connect()
     try:
         await app.send_message(str(ch).replace("https://t.me/", ""), text_message)
+        sended_messages.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=ch)
         print(ch, " :IS SENDED")
-        sended_messages.append(ch + " :IS SENDED")
-        await asyncio.sleep(1)
+        await asyncio.sleep(3)
     except FloodWait as e:
         if app.is_connected:
-            if e.value < 60:
+            if e.value < 120:
                 print("sleep time is: ", e.value)
                 await asyncio.sleep(e.value)
             else:
-                sended_messages.append(str(ch) + " SENDING ERROR IS" + e.NAME + " : " + e.MESSAGE)
+                sended_messages.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
     except BadRequest as e:
         print(str(ch), " SENDING ERROR IS", e.NAME)
-        sended_messages.append(str(ch) + " SENDING ERROR IS" + e.NAME + " : " + e.MESSAGE)
+        sended_messages.set_message(text=text_message, sending_date=datetime.now(), status=1, channel=ch)
     except Forbidden as e:
         print(str(ch), " SENDING ERROR IS", e.NAME)
-        sended_messages.append(str(ch) + " SENDING ERROR IS" + e.NAME + " : " + e.MESSAGE)
+        sended_messages.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
     except Flood as e:
         print(str(ch), " SENDING ERROR IS", e.NAME)
-        sended_messages.append(str(ch) + " SENDING ERROR IS" + e.NAME + " : " + e.MESSAGE)
+        sended_messages.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
     await app.disconnect()
     return sended_messages
 
