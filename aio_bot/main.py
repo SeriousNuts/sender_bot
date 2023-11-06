@@ -9,13 +9,12 @@ from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.utils.markdown import hbold
-from pyrogram.types import User
 
-from aio_bot import config, buttons
-from aio_bot.models.Forms import StartSendingForm
-from scripts.pyro_scripts import get_channels, send_message_to_tg, join_chats_to_tg, add_account, \
-    check_client_code
+import buttons
+import config
+from models.Forms import StartSendingForm
 from psql_core.utills import *
+from scripts.pyro_scripts import get_channels, send_message_to_tg, join_chats_to_tg
 
 TOKEN = config.TOKEN
 PAYMENTS_TOKEN = config.PAYMENTS_TOKEN
