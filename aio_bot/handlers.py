@@ -1,20 +1,14 @@
-import asyncio
-import logging
-import sys
-
 from aiogram import Bot, Dispatcher, types, Router
 from aiogram import F
-from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.utils.markdown import hbold
 
-import buttons
-import config
-from models.Forms import StartSendingForm
+from aio_bot import buttons, config
+from aio_bot.models.Forms import StartSendingForm
 from psql_core.utills import *
-from scripts.pyro_scripts import get_channels, send_message_to_tg, join_chats_to_tg
+from aio_bot.pyro_modules.pyro_scripts import get_channels, send_message_to_tg, join_chats_to_tg
 
 TOKEN = config.TOKEN
 PAYMENTS_TOKEN = config.PAYMENTS_TOKEN
@@ -121,13 +115,4 @@ async def send_messages(message: Message) -> None:
     await message.answer(f"Присоеденение к чатам закончено")
 
 
-async def main() -> None:
-    # Initialize Bot instance with a default parse mode which will be passed to all API calls
-    bot_m = Bot(TOKEN, parse_mode=ParseMode.HTML)
-    # And the run events dispatching
-    await dp.start_polling(bot_m, skip_updates=False)
 
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    asyncio.run(main())

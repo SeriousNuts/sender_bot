@@ -6,7 +6,7 @@ import uuid
 
 from pyrogram import Client
 from pyrogram.errors import FloodWait, BadRequest, Forbidden, Flood, SessionPasswordNeeded
-from aio_bot.scripts.pyro_models import Message
+from aio_bot.pyro_modules.pyro_models import Message
 account_name = "my_account"
 app_id = 28549543
 api_hash = "5901209df83fcf66e27b4cd07f9b81b2"

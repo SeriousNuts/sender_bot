@@ -1,10 +1,10 @@
+from datetime import timedelta
+
+from sqlalchemy import func
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import text, func
-from aio_bot.scripts import *
+
+from aio_bot.pyro_modules.pyro_scripts import *
 from db_models import engine, Schedule
-from sqlalchemy import select, update
-from datetime import datetime, timedelta
-from aio_bot.scripts.pyro_scripts import *
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -29,16 +29,3 @@ async def get_schedules():
         s.next_sending = datetime.now() + timedelta(minutes=s.period)
     session.commit()
 
-
-# get_schedules()
-# loop = asyncio.get_event_loop()
-#
-#
-# async def create_tasks_func():
-#     tasks = list()
-#     tasks.append(asyncio.create_task(get_schedules()))
-#     await asyncio.wait(tasks)
-#
-#
-# loop.run_until_complete(create_tasks_func())
-# loop.close()

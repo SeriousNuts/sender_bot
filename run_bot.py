@@ -1,0 +1,20 @@
+import asyncio
+import logging
+import sys
+
+from aiogram import Bot
+from aiogram.enums import ParseMode
+from aio_bot.config import TOKEN, PAYMENTS_TOKEN
+from aio_bot.handlers import dp
+
+
+async def main() -> None:
+    # Initialize Bot instance with a default parse mode which will be passed to all API calls
+    bot_m = Bot(TOKEN, parse_mode=ParseMode.HTML)
+    # And the run events dispatching
+    await dp.start_polling(bot_m, skip_updates=False)
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    asyncio.run(main())

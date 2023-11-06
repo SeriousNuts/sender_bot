@@ -1,8 +1,0 @@
-ERROR:asyncio:Task was destroyed but it is pending!
-task: <Task pending name='Task-30' coro=<StreamReader.read() done, defined at C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.9_3.9.3568.0_x64__qbz5n2kfra8p0\lib\asyncio\streams.py:643> wait_for=<Future pending cb=[<TaskWakeupMethWrapper object at 0x000002542D0936D0>()]> cb=[_release_waiter(<Future pendi...42D093190>()]>)() at C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.9_3.9.3568.0_x64__qbz5n2kfra8p0\lib\asyncio\tasks.py:416]>
-ERROR:asyncio:Task was destroyed but it is pending!
-task: <Task pending name='Task-19' coro=<Session.ping_worker() running at C:\Users\Serio\PycharmProjects\pythonProject2\venv\lib\site-packages\pyrogram\session\session.py:276> wait_for=<Future pending cb=[<TaskWakeupMethWrapper object at 0x000002542D093490>()]>>
-ERROR:asyncio:Task was destroyed but it is pending!
-task: <Task pending name='Task-4' coro=<Session.recv_worker() running at C:\Users\Serio\PycharmProjects\pythonProject2\venv\lib\site-packages\pyrogram\session\session.py:297> wait_for=<Future pending cb=[<TaskWakeupMethWrapper object at 0x000002542D093190>()]>>
-ERROR:asyncio:Task was destroyed but it is pending!
-task: <Task pending name='Task-21' coro=<Event.wait() running at C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.9_3.9.3568.0_x64__qbz5n2kfra8p0\lib\asyncio\locks.py:226> wait_for=<Future pending cb=[<TaskWakeupMethWrapper object at 0x000002542CE4BB20>()]> cb=[_release_waiter(<Future pendi...42D093490>()]>)() at C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.9_3.9.3568.0_x64__qbz5n2kfra8p0\lib\asyncio\tasks.py:416]>
