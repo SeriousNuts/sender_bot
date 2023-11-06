@@ -81,6 +81,7 @@ async def start_sending(message: Message, state: FSMContext) -> None:
     await insert_schedule(period=interval, message_text=text)
     await message.reply(f"Будем отправлять ваш текст раз в {interval} минут", reply_markup=ReplyKeyboardRemove())
     await message.reply(f"Начинаю отправку", reply_markup=ReplyKeyboardRemove())
+    await state.clear()
 
 
 @dp.message(CommandStart())
