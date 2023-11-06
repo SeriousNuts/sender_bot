@@ -107,7 +107,7 @@ async def send_messages(message: Message) -> None:
     channels = get_channels()
     msg = await message.answer(f"Начинаем отправку")
     for ch in channels:
-        sended_message = await send_message_to_tg(ch)
+        sended_message = await send_message_to_tg(ch, "test")
         msg = await msg.edit_text(f"{msg.text}\n {sended_message}", disable_web_page_preview=True)
     await message.answer(f"Все сообщения отправлены")
 
