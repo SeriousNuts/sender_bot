@@ -12,7 +12,7 @@ session = Session()
 
 async def get_schedules():
     schedules = session.query(Schedule).filter(
-        Schedule.status != "active", func.extract('minute', func.now() - Schedule.next_sending) <= Schedule.period
+        Schedule.status != "active", func.extract('minute', func.now() - Schedule.next_sending) > 0
     ).all()
     # update the status column for each user
     for s in schedules:
@@ -26,19 +26,19 @@ async def get_schedules():
         sended_messages.append(sm)
         s.status = 'work'
         s.last_sening = datetime.now()
-        s.next_sending = datetime.now() + timedelta(60 * s.period)
+        s.next_sending = datetime.now() + timedelta(minutes=s.period)
     session.commit()
 
 
 # get_schedules()
-loop = asyncio.get_event_loop()
-
-
-async def create_tasks_func():
-    tasks = list()
-    tasks.append(asyncio.create_task(get_schedules()))
-    await asyncio.wait(tasks)
-
-
-loop.run_until_complete(create_tasks_func())
-loop.close()
+# loop = asyncio.get_event_loop()
+#
+#
+# async def create_tasks_func():
+#     tasks = list()
+#     tasks.append(asyncio.create_task(get_schedules()))
+#     await asyncio.wait(tasks)
+#
+#
+# loop.run_until_complete(create_tasks_func())
+# loop.close()
