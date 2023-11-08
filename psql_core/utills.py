@@ -15,11 +15,12 @@ async def insert_account(tg_id, api_code, api_hash, name):
     session.commit()
 
 
-async def insert_schedule(period, message_text):
+async def insert_schedule(period, message_text, owner_tg_id):
     schedule = Schedule()
     schedule.period = int(period)
     schedule.text = message_text
     schedule.next_sending = datetime.now()
     schedule.status = "not sended"
+    schedule.owner_tg_id = owner_tg_id
     session.add(schedule)
     session.commit()

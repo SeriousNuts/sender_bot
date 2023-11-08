@@ -49,3 +49,4 @@ class Schedule(Base):
     next_sending = Column(DateTime())
     status = Column(String)
     text = Column(String)
+    owner_tg_id = Column(String)

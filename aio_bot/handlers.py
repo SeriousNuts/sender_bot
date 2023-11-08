@@ -44,7 +44,6 @@ async def buy(message: Message) -> None:
 # pre checkout  (must be answered in 10 seconds)
 @dp.pre_checkout_query(lambda query: True)
 async def pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
-    print("ok")
     await bot.answer_pre_checkout_query(pre_checkout_q.id, ok=True)
 
 
@@ -58,14 +57,20 @@ async def successful_payment(message: Message):
                            f"{message.successful_payment.currency} прошел успешно!!!")
 
 
-@dp.message(F.text.lower() == "начать рассылку")
+@dp.message(F.text.lower() == "создать рассылку")
 async def get_text(message: Message, state: FSMContext) -> None:
+    await message.reply(f"Начинаем формирование рассылки для отмены введите /cancel", reply_markup=ReplyKeyboardRemove())
     await message.reply(f"Введите сообщение которое будем рассылать", reply_markup=ReplyKeyboardRemove())
     await state.set_state(StartSendingForm.text)
 
 
 @dp.message(StartSendingForm.text)
-async def get_interval(message: Message, state: FSMContext) -> None:
+async def get_interval(message: Message, state: FSMContext) -> str:
+    if message.text == "/cancel":
+        print("/cancel")
+        await state.clear()
+        await message.reply(f"Создание рассылки отменено", reply_markup=ReplyKeyboardRemove())
+        return ""
     await state.update_data(text=message.text)
     await message.reply(f"Отлично, текст записал", reply_markup=ReplyKeyboardRemove())
     await message.reply(f"Теперь введите интервал в минутах для рассылки", reply_markup=ReplyKeyboardRemove())
@@ -78,7 +83,7 @@ async def start_sending(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
     interval = data["interval"]
     text = data["text"]
-    await insert_schedule(period=interval, message_text=text)
+    await insert_schedule(period=interval, message_text=text, owner_tg_id=message.from_user.id)
     await message.reply(f"Будем отправлять ваш текст раз в {interval} минут", reply_markup=ReplyKeyboardRemove())
     await message.reply(f"Начинаю отправку", reply_markup=ReplyKeyboardRemove())
     await state.clear()
@@ -86,7 +91,7 @@ async def start_sending(message: Message, state: FSMContext) -> None:
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
-    await message.reply(f"Hello, {hbold(message.from_user.full_name)}!", reply_markup=buttons.start_sending_keyboard)
+    await message.reply(f"Hello, {hbold(message.from_user.full_name)}!", reply_markup=buttons.create_sending_keyboard)
 
 
 @dp.message(Command("channel_list"))
@@ -116,4 +121,6 @@ async def send_messages(message: Message) -> None:
     await message.answer(f"Присоеденение к чатам закончено")
 
 
-
+@dp.message(Command("cancel"))
+async def test_handler(state: FSMContext) -> None:
+    await state.clear()
