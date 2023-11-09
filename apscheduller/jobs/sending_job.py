@@ -25,7 +25,7 @@ async def get_schedules():
     for s in schedules:
         sended_messages = []
         for ch in channels:
-            print(s.text)
+            #print(s.text)
             sm = await send_message_to_tg(text_message=s.text, ch=ch)
             sended_messages.append(sm)
         s.status = 'work'

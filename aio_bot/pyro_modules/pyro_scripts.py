@@ -7,18 +7,12 @@ import uuid
 from pyrogram import Client
 from pyrogram.errors import FloodWait, BadRequest, Forbidden, Flood, SessionPasswordNeeded
 from aio_bot.pyro_modules.pyro_models import Message
-account_name = "my_account"
-app_id = 28549543
-api_hash = "5901209df83fcf66e27b4cd07f9b81b2"
+import logging
 
-mes = '🔥🔥🔥 ВНИМАНИЕ 🔥🔥🔥\n\n#продамрекламу #Продам\n\n🔘 Категория:\n#Познавательное, #История,\n\n📢 Канал: ' \
-      'История и Секс. \n\nhttps://t.me/historiseks\n\n📈 Подписчиков : 13,9к.+-\nПросмотры за пост 3к+-\n\n💳 Цена  ' \
-      '1/24-600\n                  2/24-650\n                  2/48-700🔥🔥\nВозможен ВП\n\nКанал ' \
-      'Секселиум\n\nКатегория: Познавательное, Сексология. \n\nhttps://t.me/seksualim\nПодписчиков 9.1к+-\n\nОхват ' \
-      '3к+-\nЦена- 1/24-350\n             2/24-400    \n             2/48-450\nВозможен ВП\nКанал ' \
-      'Интересно\nhttps://t.me/interesno2028\nКатегория Познавательное\nПодписчиков -3.4к+\nОхват ' \
-      '-600+\nЦена-1/24-250\n           2/24-300, \n           2/48-350\nЕСЛИ СРАЗУ В ТРЁХ 1/24-1000\n\nЕСЛИ В ДВУХ ' \
-      '1/24-900 РУБ. \n\nОбращаться @A514848 '
+account_name = "anatoly"
+app_id = 27544239
+api_hash = "7349da523b2a09c4e502ca71e26c4625"
+logging.basicConfig(level=logging.INFO, filename="py_log.log", filemode="w")
 
 
 # отправляем запрос на регистрацию
@@ -54,10 +48,6 @@ async def check_client_code(code, app, phone_number_tg, phone_hash_tg):
     return result
 
 
-def get_connection():
-    return Client("my_account", api_id=app_id, api_hash=api_hash)
-
-
 def get_channels():
     channels = []
     path = os.getcwd()
@@ -84,15 +74,19 @@ async def send_message_to_tg(ch, text_message):
                 print("sleep time is: ", e.value)
                 await asyncio.sleep(e.value)
             else:
+                logging.info(f"{str(ch)}  FLOOD WAIT {e.value}")
                 sended_messages.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
     except BadRequest as e:
         print(str(ch), " SENDING ERROR IS", e.NAME)
+        logging.info(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
         sended_messages.set_message(text=text_message, sending_date=datetime.now(), status=1, channel=ch)
     except Forbidden as e:
         print(str(ch), " SENDING ERROR IS", e.NAME)
+        logging.info(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
         sended_messages.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
     except Flood as e:
         print(str(ch), " SENDING ERROR IS", e.NAME)
+        logging.info(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
         sended_messages.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
     await app.disconnect()
     return sended_messages
