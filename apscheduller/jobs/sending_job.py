@@ -53,8 +53,8 @@ async def send_stats_to_user(number_mes, suc_mes, ban_mes, flood_mes, tg_id):
     if tg_id is None:
         tg_id = "6655978580"
     await bot.send_message(tg_id, f"Совершена рассылка \n "
-                                         f"Успешно отправлено {suc_mes} из {number_mes} \n"
-                                         f"В {ban_mes} получен бан \n"
-                                         f"В {flood_mes} сообщение не отправлено из-за ограничений флуд фильтра канала")
+                                 f"Успешно отправлено в {suc_mes} чатов из {number_mes} \n"
+                                 f"В {ban_mes} чатах получен бан \n"
+                                 f"В {flood_mes} чатах сообщение не отправлено из-за ограничений флуд фильтра канала")
 
     await bot.session.close()
