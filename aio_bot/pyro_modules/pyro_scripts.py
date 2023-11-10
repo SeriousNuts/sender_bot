@@ -12,7 +12,7 @@ import logging
 account_name = "anatoly"
 app_id = 27544239
 api_hash = "7349da523b2a09c4e502ca71e26c4625"
-logging.basicConfig(level=logging.INFO, filename="py_log.log", filemode="w")
+logging.basicConfig(level=logging.INFO, filename="py_log.log", filemode="a")
 
 
 # отправляем запрос на регистрацию
