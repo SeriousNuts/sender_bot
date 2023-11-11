@@ -12,7 +12,7 @@ import logging
 account_name = "anatoly"
 app_id = 27544239
 api_hash = "7349da523b2a09c4e502ca71e26c4625"
-logging.basicConfig(level=logging.WARNING, filename="py_log.log", filemode="a")
+logging.basicConfig(level=logging.ERROR, filename="py_log.log", filemode="a")
 
 
 # отправляем запрос на регистрацию
@@ -78,16 +78,20 @@ async def send_message_to_tg(ch, text_message):
                 sended_messages.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
     except BadRequest as e:
         print(str(ch), " SENDING ERROR IS", e.NAME)
-        logging.warning(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
+        logging.error(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
         sended_messages.set_message(text=text_message, sending_date=datetime.now(), status=1, channel=ch)
     except Forbidden as e:
         print(str(ch), " SENDING ERROR IS", e.NAME)
-        logging.warning(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
+        logging.error(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
         sended_messages.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
     except Flood as e:
         print(str(ch), " SENDING ERROR IS", e.NAME)
-        logging.warning(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
+        logging.error(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
         sended_messages.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
+    except KeyError as e:
+        print(str(ch), " SENDING ERROR IS", str(e))
+        logging.error(f"{str(ch)}  SENDING ERROR IS {str(e)}")
+        sended_messages.set_message(text=text_message, sending_date=datetime.now(), status=5, channel=ch)
     await app.disconnect()
     return sended_messages
 

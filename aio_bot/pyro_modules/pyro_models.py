@@ -8,6 +8,7 @@ class StatusMessage(Enum):
     BADREQUEST = 2
     FLOOD = 3
     NOTSENDED = 4
+    NOTFOUND = 5
 
 
 class Message:
