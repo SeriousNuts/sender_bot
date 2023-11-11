@@ -12,7 +12,7 @@ import logging
 account_name = "anatoly"
 app_id = 27544239
 api_hash = "7349da523b2a09c4e502ca71e26c4625"
-logging.basicConfig(level=logging.INFO, filename="py_log.log", filemode="a")
+logging.basicConfig(level=logging.WARNING, filename="py_log.log", filemode="a")
 
 
 # отправляем запрос на регистрацию
@@ -74,19 +74,19 @@ async def send_message_to_tg(ch, text_message):
                 print("sleep time is: ", e.value)
                 await asyncio.sleep(e.value)
             else:
-                logging.info(f"{str(ch)}  FLOOD WAIT {e.value}")
+                logging.warning(f"{str(ch)}  FLOOD WAIT {e.value}")
                 sended_messages.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
     except BadRequest as e:
         print(str(ch), " SENDING ERROR IS", e.NAME)
-        logging.info(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
+        logging.warning(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
         sended_messages.set_message(text=text_message, sending_date=datetime.now(), status=1, channel=ch)
     except Forbidden as e:
         print(str(ch), " SENDING ERROR IS", e.NAME)
-        logging.info(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
+        logging.warning(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
         sended_messages.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
     except Flood as e:
         print(str(ch), " SENDING ERROR IS", e.NAME)
-        logging.info(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
+        logging.warning(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
         sended_messages.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
     await app.disconnect()
     return sended_messages
