@@ -24,3 +24,12 @@ async def insert_schedule(period, message_text, owner_tg_id):
     schedule.owner_tg_id = owner_tg_id
     session.add(schedule)
     session.commit()
+
+
+async def get_user_schedules(owner_tg_id):
+    print("start getting sched")
+    schedules = session.query(Schedule).filter(
+        Schedule.owner_tg_id == owner_tg_id
+    ).all()
+    print("stop getting sched")
+    return schedules

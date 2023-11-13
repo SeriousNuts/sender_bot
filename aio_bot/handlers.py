@@ -6,11 +6,13 @@ from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.utils.markdown import hbold
 
 from aio_bot import buttons, config
+from aio_bot.buttons import delete_sending_inline
+from aio_bot.callback_fabrics import get_keyboard_fab
 from aio_bot.models.Forms import StartSendingForm
 from psql_core.utills import *
 from aio_bot.pyro_modules.pyro_scripts import get_channels, send_message_to_tg, join_chats_to_tg
 
-TOKEN = config.TOKEN
+TOKEN = config.TOKEN_TEST
 PAYMENTS_TOKEN = config.PAYMENTS_TOKEN
 PRICE = types.LabeledPrice(label="Подписка на 1 месяц", amount=50 * 100)  # в копейках (руб)
 
@@ -59,7 +61,8 @@ async def successful_payment(message: Message):
 
 @dp.message(F.text.lower() == "создать рассылку")
 async def get_text(message: Message, state: FSMContext) -> None:
-    await message.reply(f"Начинаем формирование рассылки для отмены введите /cancel", reply_markup=ReplyKeyboardRemove())
+    await message.reply(f"Начинаем формирование рассылки для отмены введите /cancel",
+                        reply_markup=ReplyKeyboardRemove())
     await message.reply(f"Введите сообщение которое будем рассылать", reply_markup=ReplyKeyboardRemove())
     await state.set_state(StartSendingForm.text)
 
@@ -69,7 +72,7 @@ async def get_interval(message: Message, state: FSMContext) -> str:
     if message.text == "/cancel":
         print("/cancel")
         await state.clear()
-        await message.reply(f"Создание рассылки отменено", reply_markup=ReplyKeyboardRemove())
+        await message.reply(f"Создание рассылки отменено", reply_markup=buttons.menu_keyboard)
         return ""
     await state.update_data(text=message.text)
     await message.reply(f"Отлично, текст записал", reply_markup=ReplyKeyboardRemove())
@@ -84,14 +87,16 @@ async def start_sending(message: Message, state: FSMContext) -> None:
     interval = data["interval"]
     text = data["text"]
     await insert_schedule(period=interval, message_text=text, owner_tg_id=message.from_user.id)
-    await message.reply(f"Будем отправлять ваш текст раз в {interval} минут", reply_markup=ReplyKeyboardRemove())
-    await message.reply(f"Начинаю отправку", reply_markup=ReplyKeyboardRemove())
+    await message.reply(
+        f"Будем отправлять ваш текст раз в {interval} минут. После каждой отправки вам придёт стаитсика",
+        reply_markup=ReplyKeyboardRemove())
+    await message.reply(f"Начинаю отправку", reply_markup=buttons.menu_keyboard)
     await state.clear()
 
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
-    await message.reply(f"Hello, {hbold(message.from_user.full_name)}!", reply_markup=buttons.create_sending_keyboard)
+    await message.reply(f"Привет, {hbold(message.from_user.full_name)}!", reply_markup=buttons.menu_keyboard)
 
 
 @dp.message(Command("channel_list"))
@@ -124,3 +129,23 @@ async def send_messages(message: Message) -> None:
 @dp.message(Command("cancel"))
 async def test_handler(state: FSMContext) -> None:
     await state.clear()
+
+
+@dp.message(Command("menu"))
+async def menu(message: Message) -> None:
+    await bot.send_message(message.chat.id, "Меню", reply_markup=buttons.menu_keyboard)
+
+
+@dp.message(F.text.lower() == "мои рассылки")
+async def menu(message: Message) -> None:
+    schedules = await get_user_schedules(str(message.from_user.id))
+    print("schedules")
+    if len(schedules) == 0:
+        await message.reply(f"У вас нет ни одной рассылки. Можете создать их выбрав в /menu 'Создать рассылку'")
+    else:
+        for s in schedules:
+            print("сбор рассылок")
+            await bot.send_message(message.from_user.id, f"Текст рассылки:\n {s.text}\n Период: {s.period}",
+                                   reply_markup=get_keyboard_fab(sending_id=s.id, tg_owner_id=message.from_user.id))
+
+

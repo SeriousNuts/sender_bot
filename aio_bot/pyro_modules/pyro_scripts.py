@@ -51,7 +51,8 @@ async def check_client_code(code, app, phone_number_tg, phone_hash_tg):
 def get_channels():
     channels = []
     path = os.getcwd()
-    channels_path = os.path.join(path, "sender_bot", "aio_bot", "channels.csv")
+    channels_path = os.path.join(path, "sender_bot", "aio_bot", "channels_new.csv")
+    #channels_path = os.path.join(path, "aio_bot", "channels_new.csv")
     with open(channels_path, encoding='UTF-8') as r_file:
         file_reader = csv.DictReader(r_file, delimiter=";")
         for row in file_reader:
@@ -104,10 +105,10 @@ async def join_chats_to_tg(ch):
         await app.join_chat(str(ch).replace("https://t.me/", ""))
         joined_channels.append(ch)
         print(ch, " :IS JOINED")
-        await asyncio.sleep(1)
+        await asyncio.sleep(120)
     except FloodWait as e:
         if app.is_connected:
-            if e.value < 60:
+            if e.value < 301:
                 print("sleep time is: ", e.value)
                 await asyncio.sleep(e.value)
         else:

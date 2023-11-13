@@ -33,8 +33,8 @@ async def get_schedules():
         s.next_sending = datetime.now() + timedelta(minutes=s.period)
         number_mes = len(sended_messages)
         suc_mes = count_messages(sended_messages, 0)
-        ban_mes = count_messages(sended_messages, 3)
-        flood_mes = count_messages(sended_messages, 4)
+        ban_mes = count_messages(sended_messages, 2)
+        flood_mes = count_messages(sended_messages, 3)
         await send_stats_to_user(number_mes=number_mes, suc_mes=suc_mes, ban_mes=ban_mes, flood_mes=flood_mes,
                                  tg_id=s.owner_tg_id)
 
