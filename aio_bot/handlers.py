@@ -2,17 +2,17 @@ from aiogram import Bot, Dispatcher, types, Router
 from aiogram import F
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ReplyKeyboardRemove
+from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 from aiogram.utils.markdown import hbold
 
 from aio_bot import buttons, config
 from aio_bot.buttons import delete_sending_inline
-from aio_bot.callback_fabrics import get_keyboard_fab
+from aio_bot.callback_fabrics import get_keyboard_fab, IdCallbackFactory
 from aio_bot.models.Forms import StartSendingForm
 from psql_core.utills import *
 from aio_bot.pyro_modules.pyro_scripts import get_channels, send_message_to_tg, join_chats_to_tg
 
-TOKEN = config.TOKEN_TEST
+TOKEN = config.TOKEN
 PAYMENTS_TOKEN = config.PAYMENTS_TOKEN
 PRICE = types.LabeledPrice(label="Подписка на 1 месяц", amount=50 * 100)  # в копейках (руб)
 
@@ -82,6 +82,11 @@ async def get_interval(message: Message, state: FSMContext) -> str:
 
 @dp.message(StartSendingForm.interval)
 async def start_sending(message: Message, state: FSMContext) -> None:
+    if message.text == "/cancel":
+        print("/cancel")
+        await state.clear()
+        await message.reply(f"Создание рассылки отменено", reply_markup=buttons.menu_keyboard)
+        return ""
     await state.update_data(interval=message.text)
     data = await state.get_data()
     interval = data["interval"]
@@ -139,13 +144,16 @@ async def menu(message: Message) -> None:
 @dp.message(F.text.lower() == "мои рассылки")
 async def menu(message: Message) -> None:
     schedules = await get_user_schedules(str(message.from_user.id))
-    print("schedules")
     if len(schedules) == 0:
         await message.reply(f"У вас нет ни одной рассылки. Можете создать их выбрав в /menu 'Создать рассылку'")
     else:
         for s in schedules:
-            print("сбор рассылок")
             await bot.send_message(message.from_user.id, f"Текст рассылки:\n {s.text}\n Период: {s.period}",
-                                   reply_markup=get_keyboard_fab(sending_id=s.id, tg_owner_id=message.from_user.id))
+                                   reply_markup=get_keyboard_fab(sending_id=s.id, tg_owner_id=str(message.from_user.id))
+                                   )
 
 
+@dp.callback_query(IdCallbackFactory.filter(F.action == "delete_sending"))
+async def my_callback_foo(query: CallbackQuery, callback_data: IdCallbackFactory):
+    await delete_schedule(owner_tg_id=callback_data.owner_id, sending_id=callback_data.owner_id)
+    await bot.send_message(callback_data.owner_id, f"Сообщение удалено")

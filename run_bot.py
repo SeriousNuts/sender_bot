@@ -11,7 +11,7 @@ from aio_bot.handlers import dp
 
 async def main() -> None:
     # Initialize Bot instance with a default parse mode which will be passed to all API calls
-    bot_m = Bot(TOKEN_TEST, parse_mode=ParseMode.HTML)
+    bot_m = Bot(TOKEN, parse_mode=ParseMode.HTML)
     # And the run events dispatching
     await dp.start_polling(bot_m, skip_updates=False)
 

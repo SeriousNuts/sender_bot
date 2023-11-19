@@ -33,3 +33,9 @@ async def get_user_schedules(owner_tg_id):
     ).all()
     print("stop getting sched")
     return schedules
+
+
+async def delete_schedule(owner_tg_id, sending_id):
+    schedules = session.query(Schedule).filter(Schedule.id == sending_id, Schedule.owner_tg_id == owner_tg_id).first()
+    session.delete(schedules)
+    session.commit()
