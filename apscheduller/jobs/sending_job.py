@@ -35,8 +35,9 @@ async def get_schedules():
         suc_mes = count_messages(sended_messages, 0)
         ban_mes = count_messages(sended_messages, 2)
         flood_mes = count_messages(sended_messages, 3) + count_messages(sended_messages, 1)
+        ban_ch = channels_error(sended_messages, 2)
         await send_stats_to_user(number_mes=number_mes, suc_mes=suc_mes, ban_mes=ban_mes, flood_mes=flood_mes,
-                                 tg_id=s.owner_tg_id)
+                                 tg_id=s.owner_tg_id, ban_ch=ban_ch)
 
     session.commit()
 
