@@ -51,7 +51,7 @@ async def check_client_code(code, app, phone_number_tg, phone_hash_tg):
 def get_channels():
     channels = []
     path = os.getcwd()
-    channels_path = os.path.join(path, "sender_bot", "aio_bot", "channels_new.csv")
+    channels_path = os.path.join(path, "sender_bot", "aio_bot", "channels.csv")
     #channels_path = os.path.join(path, "aio_bot", "channels_new.csv")
     with open(channels_path, encoding='UTF-8') as r_file:
         file_reader = csv.DictReader(r_file, delimiter=";")

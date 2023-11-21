@@ -155,5 +155,18 @@ async def menu(message: Message) -> None:
 
 @dp.callback_query(IdCallbackFactory.filter(F.action == "delete_sending"))
 async def my_callback_foo(query: CallbackQuery, callback_data: IdCallbackFactory):
-    await delete_schedule(owner_tg_id=callback_data.owner_id, sending_id=callback_data.owner_id)
+    print("начало удаления")
+    await delete_schedule(owner_tg_id=callback_data.owner_id, sending_id=callback_data.sending_id)
+    print("удалено")
     await bot.send_message(callback_data.owner_id, f"Сообщение удалено")
+
+
+async def send_stats_to_user(number_mes, suc_mes, ban_mes, flood_mes, tg_id, ban_ch):
+    if tg_id is None:
+        tg_id = "6655978580"
+    await bot.send_message(tg_id, f"Совершена рассылка \n "
+                                  f"Успешно отправлено в {suc_mes} чатов из {number_mes} \n"
+                                  f"В {ban_mes} чатах получен бан \n"
+                                  f"Список чатов в которых получен бан: \n"
+                                  f"{ban_ch} \n"
+                                  f"В {flood_mes} чатах сообщение не отправлено из-за ограничений флуд фильтра канала")
