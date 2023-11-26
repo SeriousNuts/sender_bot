@@ -80,11 +80,11 @@ async def send_message_to_tg(ch, text_message):
     except BadRequest as e:
         print(str(ch), " SENDING ERROR IS", e.NAME)
         logging.error(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
-        sended_message.set_message(text=text_message, sending_date=datetime.now(), status=1, channel=ch)
+        sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
     except Forbidden as e:
         print(str(ch), " SENDING ERROR IS", e.NAME)
         logging.error(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
-        sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
+        sended_message.set_message(text=text_message, sending_date=datetime.now(), status=1, channel=ch)
     except Flood as e:
         print(str(ch), " SENDING ERROR IS", e.NAME)
         logging.error(f"{str(ch)}  SENDING ERROR IS {e.NAME}")

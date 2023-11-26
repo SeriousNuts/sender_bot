@@ -50,9 +50,9 @@ def count_messages(sent_messages, code):
     return count.get(code, 0)
 
 
-def channels_error(sennded_messages, status):
+def channels_error(sended_messages, status):
     errors_messages = []
-    for s in sennded_messages:
+    for s in sended_messages:
         if s.status == status:
             errors_messages.append(s.ch)
     return errors_messages

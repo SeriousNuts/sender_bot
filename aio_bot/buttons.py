@@ -15,7 +15,6 @@ menu_s = [
     [
         types.KeyboardButton(text="создать рассылку"),
         types.KeyboardButton(text="мои рассылки"),
-        types.KeyboardButton(text="подписка"),
     ],
 ]
 cancel_keyboard = types.ReplyKeyboardMarkup(
