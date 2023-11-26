@@ -141,9 +141,9 @@ async def get_schedules():
     session.commit()
 
 
-# loop = asyncio.get_event_loop()
-# loop.run_until_complete(joing_chat())
-asyncio.run(get_schedules())
+loop = asyncio.get_event_loop()
+loop.run_until_complete(joing_chat())
+#asyncio.run(get_schedules())
 # asyncio.run(main())
 # asyncio.run(get_bio())
 # loop = asyncio.get_event_loop()

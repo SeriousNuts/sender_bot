@@ -14,7 +14,7 @@ session = Session()
 
 async def get_schedules():
     schedules = session.query(Schedule).filter(
-        Schedule.status != "active", func.extract('minute', func.now() - Schedule.next_sending) > 0
+        Schedule.status != "active", Schedule.status != "test", func.extract('minute', func.now() - Schedule.next_sending) > 0
     ).all()
     # update the status column for each user
     for s in schedules:
