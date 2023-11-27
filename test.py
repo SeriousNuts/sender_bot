@@ -14,12 +14,12 @@ from aio_bot.pyro_modules.pyro_scripts import get_channels, send_message_to_tg
 from apscheduller.jobs.sending_job import count_messages, channels_error
 from db_models import Schedule, engine
 
-account_name = "anatoly"
-app_id = 27544239
-api_hash = "7349da523b2a09c4e502ca71e26c4625"
-# account_name = "vasily"
-# app_id = 25180332
-# api_hash = "539ab72d422f642484190f3a046170b9"
+#account_name = "anatoly"
+#app_id = 27544239
+#api_hash = "7349da523b2a09c4e502ca71e26c4625"
+account_name = "vasily"
+app_id = 25180332
+api_hash = "539ab72d422f642484190f3a046170b9"
 logging.basicConfig(level=logging.ERROR, filename="join_log.log", filemode="a")
 Session = sessionmaker(bind=engine)
 session = Session()

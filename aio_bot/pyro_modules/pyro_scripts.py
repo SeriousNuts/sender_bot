@@ -9,9 +9,9 @@ from pyrogram.errors import FloodWait, BadRequest, Forbidden, Flood, SessionPass
 from aio_bot.pyro_modules.pyro_models import Message
 import logging
 
-account_name = "anatoly"
-app_id = 27544239
-api_hash = "7349da523b2a09c4e502ca71e26c4625"
+account_name = "vasily"
+app_id = 25180332
+api_hash = "539ab72d422f642484190f3a046170b9"
 logging.basicConfig(level=logging.ERROR, filename="py_log.log", filemode="a")
 
 
