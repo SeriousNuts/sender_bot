@@ -14,12 +14,15 @@ from aio_bot.pyro_modules.pyro_scripts import get_channels, send_message_to_tg
 from apscheduller.jobs.sending_job import count_messages, channels_error
 from db_models import Schedule, engine
 
-#account_name = "anatoly"
-#app_id = 27544239
-#api_hash = "7349da523b2a09c4e502ca71e26c4625"
-account_name = "vasily"
-app_id = 25180332
-api_hash = "539ab72d422f642484190f3a046170b9"
+# account_name = "anatoly"
+# app_id = 27544239
+# api_hash = "7349da523b2a09c4e502ca71e26c4625"
+#account_name = "vasily"
+#app_id = 25180332
+#api_hash = "539ab72d422f642484190f3a046170b9"
+account_name = "ignat"
+app_id = 28644656
+api_hash = "b79872c0dd5060dd9e6f70f237121810"
 logging.basicConfig(level=logging.ERROR, filename="join_log.log", filemode="a")
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -58,11 +61,25 @@ async def test_send():
 
 
 async def joing_chat():
+    # chats = ["https://t.me/brukchattg", "https://t.me/TGPR_RealType"]
     chats = get_channels_py()
+    # print(chats)
     results = []
     for c in chats:
         res = await join_chats_to_tg_pyro(c)
         results.append(res)
+
+
+async def join_chats_to_tg_pyro_test(ch):
+    joined_channels = []
+    app = Client(account_name, api_id=app_id, api_hash=api_hash)
+    await app.connect()
+    await app.join_chat(str(ch).replace("https://t.me/", ""))
+    joined_channels.append(ch)
+    # .error(f"{str(ch)}  JOINED")
+    print(ch, " :IS JOINED")
+    await asyncio.sleep(60)
+    await app.disconnect()
 
 
 async def join_chats_to_tg_pyro(ch):
@@ -72,16 +89,18 @@ async def join_chats_to_tg_pyro(ch):
     try:
         await app.join_chat(str(ch).replace("https://t.me/", ""))
         joined_channels.append(ch)
-        logging.error(f"{str(ch)}  JOINED")
+        # .error(f"{str(ch)}  JOINED")
         print(ch, " :IS JOINED")
-        await asyncio.sleep(60)
+        await asyncio.sleep(120)
     except FloodWait as e:
         if app.is_connected:
-            if e.value < 301:
+            if e.value < 9301:
                 print("sleep time is: ", e.value)
                 await asyncio.sleep(e.value)
                 await app.join_chat(str(ch).replace("https://t.me/", ""))
         else:
+            print(f"flood wait too long {e.value}")
+            logging.error(f"flood wait too long {e.value}")
             await app.disconnect()
             return 0
     except BadRequest as e:
@@ -96,6 +115,14 @@ async def join_chats_to_tg_pyro(ch):
         print(str(ch), " JOINING ERROR IS", e.NAME)
         joined_channels.append(str(ch) + " JOINING ERROR IS" + e.NAME + " : " + e.MESSAGE)
         logging.error(f"{str(ch)}  JOINING ERROR IS {e.NAME}")
+    except FloodWait as e:
+        print(str(ch), " JOINING ERROR IS", e.NAME)
+        joined_channels.append(str(ch) + " JOINING ERROR IS" + e.NAME + " : " + e.value)
+        logging.error(f"{str(ch)}  JOINING ERROR IS {e.NAME}")
+    except KeyError as e:
+        print(str(ch), " SENDING ERROR IS", str(e))
+        logging.error(f"{str(ch)}  JOINING ERROR IS key error")
+        joined_channels.append(str(ch) + " JOINING ERROR IS" + e.NAME + " : " + e.value)
     await app.disconnect()
     return joined_channels
 
@@ -143,8 +170,8 @@ async def get_schedules():
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(joing_chat())
-#asyncio.run(get_schedules())
-# asyncio.run(main())
+# asyncio.run(get_schedules())
+#asyncio.run(main())
 # asyncio.run(get_bio())
 # loop = asyncio.get_event_loop()
 # loop.run_until_complete(test_send())

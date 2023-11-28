@@ -1,9 +1,36 @@
 from sqlalchemy import create_engine, Column, Integer, String, BigInteger, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+import datetime
+from enum import Enum
 
 engine = create_engine("postgresql://postgreadmin:738818@89.108.114.174:3090/sender_bot")
 Base = declarative_base()
+
+
+class StatusMessage(Enum):
+    SENDED = 0
+    FORBIDDEN = 1
+    BADREQUEST = 2
+    FLOOD = 3
+    NOTSENDED = 4
+    NOTFOUND = 5
+
+
+class Message(Base):
+    __tablename__ = 'messages'
+    id = Column(Integer, primary_key=True)
+    text = Column(String)
+    sending_date = Column(DateTime())
+    status = Column(Integer, index=True)
+    channel = Column(String)
+    account_name = Column(String)
+
+    def set_message(self, text, sending_date, status, channel):
+        self.text = text
+        self.sending_date = sending_date
+        self.status = status
+        self.channel = channel
 
 
 class Account(Base):
@@ -50,3 +77,9 @@ class Schedule(Base):
     status = Column(String)
     text = Column(String)
     owner_tg_id = Column(String)
+
+
+class Settings(Base):
+    __tablename__ = 'Settings'
+    account = Column(String)
+    max_wait_time = Column(Integer)

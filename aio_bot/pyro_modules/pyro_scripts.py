@@ -6,8 +6,10 @@ import uuid
 
 from pyrogram import Client
 from pyrogram.errors import FloodWait, BadRequest, Forbidden, Flood, SessionPasswordNeeded
-from aio_bot.pyro_modules.pyro_models import Message
 import logging
+
+from db_models import Message
+from psql_core.utills import insert_message
 
 account_name = "vasily"
 app_id = 25180332
@@ -93,7 +95,12 @@ async def send_message_to_tg(ch, text_message):
         print(str(ch), " SENDING ERROR IS", str(e))
         logging.error(f"{str(ch)}  SENDING ERROR IS {str(e)}")
         sended_message.set_message(text=text_message, sending_date=datetime.now(), status=5, channel=ch)
+    except FloodWait as e:
+        print(str(ch), " JOINING ERROR IS", e.NAME)
+        sended_message.append(str(ch) + " JOINING ERROR IS" + e.NAME + " : " + e.value)
+        logging.error(f"{str(ch)}  JOINING ERROR IS {e.NAME}")
     await app.disconnect()
+    await insert_message(sended_message)
     return sended_message
 
 

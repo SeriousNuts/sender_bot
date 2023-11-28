@@ -39,3 +39,8 @@ async def delete_schedule(owner_tg_id, sending_id):
     schedules = session.query(Schedule).filter(Schedule.id == sending_id, Schedule.owner_tg_id == owner_tg_id).first()
     session.delete(schedules)
     session.commit()
+
+
+async def insert_message(message):
+    session.add(message)
+    session.commit()
