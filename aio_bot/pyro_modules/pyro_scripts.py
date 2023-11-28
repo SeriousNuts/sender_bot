@@ -11,9 +11,9 @@ import logging
 from db_models import Message
 from psql_core.utills import insert_message
 
-account_name = "vasily"
-app_id = 25180332
-api_hash = "539ab72d422f642484190f3a046170b9"
+account_name = "ignat"
+app_id = 28644656
+api_hash = "b79872c0dd5060dd9e6f70f237121810"
 logging.basicConfig(level=logging.ERROR, filename="py_log.log", filemode="a")
 
 
