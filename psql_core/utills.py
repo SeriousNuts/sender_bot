@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import sessionmaker
 
-from db_models import Account, engine, Schedule
+from db_models import Account, engine, Schedule, Setting
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -44,3 +44,7 @@ async def delete_schedule(owner_tg_id, sending_id):
 async def insert_message(message):
     session.add(message)
     session.commit()
+
+
+async def get_settings(type_s):
+    return session.query(Setting).filter(Setting.type == type_s).first()

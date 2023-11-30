@@ -8,8 +8,8 @@ from pyrogram import Client
 from pyrogram.errors import FloodWait, BadRequest, Forbidden, Flood, SessionPasswordNeeded
 import logging
 
-from db_models import Message
-from psql_core.utills import insert_message
+from db_models import Message, Setting
+from psql_core.utills import insert_message, get_settings
 
 account_name = "ignat"
 app_id = 28644656
@@ -64,7 +64,8 @@ def get_channels():
 
 async def send_message_to_tg(ch, text_message):
     sended_message = Message()
-    app = Client(account_name, api_id=app_id, api_hash=api_hash)
+    settings = get_settings("send")
+    app = Client(settings.account)
     await app.connect()
     try:
         await app.send_message(str(ch).replace("https://t.me/", ""), text_message)
@@ -72,13 +73,17 @@ async def send_message_to_tg(ch, text_message):
         print(ch, " :IS SENDED")
         await asyncio.sleep(3)
     except FloodWait as e:
-        if app.is_connected:
+        if app.is_connected and e.value < 120:
             if e.value < 120:
                 print("sleep time is: ", e.value)
                 await asyncio.sleep(e.value)
+                await app.send_message(str(ch).replace("https://t.me/", ""), text_message)
             else:
                 logging.warning(f"{str(ch)}  FLOOD WAIT {e.value}")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
+        else:
+            sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
+            return sended_message
     except BadRequest as e:
         print(str(ch), " SENDING ERROR IS", e.NAME)
         logging.error(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
@@ -95,10 +100,6 @@ async def send_message_to_tg(ch, text_message):
         print(str(ch), " SENDING ERROR IS", str(e))
         logging.error(f"{str(ch)}  SENDING ERROR IS {str(e)}")
         sended_message.set_message(text=text_message, sending_date=datetime.now(), status=5, channel=ch)
-    except FloodWait as e:
-        print(str(ch), " JOINING ERROR IS", e.NAME)
-        sended_message.append(str(ch) + " JOINING ERROR IS" + e.NAME + " : " + e.value)
-        logging.error(f"{str(ch)}  JOINING ERROR IS {e.NAME}")
     await app.disconnect()
     await insert_message(sended_message)
     return sended_message

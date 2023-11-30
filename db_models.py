@@ -37,15 +37,13 @@ class Account(Base):
     __tablename__ = 'accounts'
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    owner_tg_id = Column(BigInteger, index=True)
-    api_code = Column(String)
+    app_id = Column(Integer)
     api_hash = Column(String)
     status = Column(String)
 
-    def account(self, name, owner_tg_id, api_code, api_hash, status):
+    def account(self, name, app_id, api_hash, status):
         self.name = name
-        self.owner_tg_id = owner_tg_id
-        self.api_code = api_code
+        self.app_id = app_id
         self.api_hash = api_hash
         self.status = status
 
@@ -79,7 +77,9 @@ class Schedule(Base):
     owner_tg_id = Column(String)
 
 
-class Settings(Base):
-    __tablename__ = 'Settings'
+class Setting(Base):
+    __tablename__ = 'settings'
+    id = Column(Integer, primary_key=True)
     account = Column(String)
     max_wait_time = Column(Integer)
+    type = Column(String)
