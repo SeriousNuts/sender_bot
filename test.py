@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker
 from aio_bot.handlers import bot, send_stats_to_user_test, send_stats_to_user
 from aio_bot.pyro_modules.pyro_scripts import send_message_to_tg
 from apscheduller.jobs.sending_job import count_messages, channels_error
-from db_models import Schedule, engine, Setting, Account
+from db_models import Schedule, engine, Setting, Account, Channel
 
 # account_name = "anatoly"
 # app_id = 27544239
@@ -191,7 +191,16 @@ def insert_acc():
     session.commit()
 
 
-insert_set()
+def insert_channels():
+    channels = get_channels_py()
+    for c in channels:
+        chan = Channel()
+        chan.url = c
+        chan.owner_tg_id = 860176121
+        session.add(chan)
+    session.commit()
+
+insert_channels()
 
 # loop = asyncio.get_event_loop()
 # loop.run_until_complete(joing_chat())

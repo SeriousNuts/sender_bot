@@ -64,7 +64,7 @@ def get_channels():
 
 async def send_message_to_tg(ch, text_message):
     sended_message = Message()
-    settings = get_settings("send")
+    settings = await get_settings("send")
     app = Client(settings.account)
     await app.connect()
     try:
