@@ -74,10 +74,11 @@ async def send_message_to_tg(ch, text_message):
         await asyncio.sleep(3)
     except FloodWait as e:
         if app.is_connected:
-            if e.value < 120:
+            if e.value < 999:
                 print("sleep time is: ", e.value)
                 await asyncio.sleep(e.value)
                 await app.send_message(str(ch).replace("https://t.me/", ""), text_message)
+                await asyncio.sleep(3)
             else:
                 logging.warning(f"{str(ch)}  FLOOD WAIT {e.value}")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
