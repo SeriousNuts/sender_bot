@@ -47,4 +47,6 @@ async def insert_message(message):
 
 
 async def get_settings(type_s):
-    return session.query(Setting).filter(Setting.type == type_s).first()
+    setting = session.query(Setting).filter(Setting.type == type_s).first()
+    account = session.query(Account).filter(Account.name == setting.account).first()
+    return setting, account

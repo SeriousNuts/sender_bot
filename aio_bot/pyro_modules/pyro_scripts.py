@@ -64,8 +64,8 @@ def get_channels():
 
 async def send_message_to_tg(ch, text_message):
     sended_message = Message()
-    settings = await get_settings("send")
-    app = Client(settings.account)
+    settings, account = await get_settings("send")
+    app = Client(settings.account, api_id=account.app_id, api_hash=account.api_hash)
     await app.connect()
     try:
         await app.send_message(str(ch).replace("https://t.me/", ""), text_message)
