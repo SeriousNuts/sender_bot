@@ -3,7 +3,7 @@ from datetime import timedelta
 from sqlalchemy import func
 from sqlalchemy.orm import sessionmaker
 
-from aio_bot.handlers import bot, send_stats_to_user
+from aio_bot.handlers import bot
 from aio_bot.pyro_modules.pyro_scripts import *
 from db_models import engine, Schedule
 from aio_bot.pyro_modules.pyro_scripts import get_channels
@@ -59,4 +59,13 @@ def channels_error(sended_messages, status):
     return errors_messages
 
 
-
+async def send_stats_to_user(number_mes, suc_mes, ban_mes, flood_mes, tg_id, ban_ch, flood_ch):
+    if tg_id is None:
+        tg_id = "6655978580"
+    await bot.send_message(tg_id, f"Совершена рассылка \n "
+                                  f"Успешно отправлено в {suc_mes} чатов из {number_mes} \n"
+                                  f"В {ban_mes} чатах получен бан \n"
+                                  f"Список чатов в которых получен бан: \n"
+                                  f"{ban_ch} \n"
+                                  f"В {flood_mes} чатах сообщение не отправлено из-за ограничений флуд фильтра канала"
+                                  f"список чатов куда сообщение не ушло из-за ограничений телеграма:\n {flood_ch}")
