@@ -25,6 +25,7 @@ class Message(Base):
     status = Column(Integer, index=True)
     channel = Column(String)
     account_name = Column(String)
+    schedule_owner_id = Column(String)
 
     def set_message(self, text, sending_date, status, channel):
         self.text = text

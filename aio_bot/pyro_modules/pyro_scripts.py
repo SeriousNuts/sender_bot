@@ -101,6 +101,7 @@ async def send_message_to_tg(ch, text_message):
         logging.error(f"{str(ch)}  SENDING ERROR IS {str(e)}")
         sended_message.set_message(text=text_message, sending_date=datetime.now(), status=5, channel=ch)
     await app.disconnect()
+    sended_message.account_name = settings.account
     await insert_message(sended_message)
     return sended_message
 
