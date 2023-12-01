@@ -78,9 +78,10 @@ async def send_message_to_tg(ch, text_message):
                 print("sleep time is: ", e.value)
                 await asyncio.sleep(e.value)
                 await app.send_message(str(ch).replace("https://t.me/", ""), text_message)
+                sended_message.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=ch)
                 await asyncio.sleep(3)
             else:
-                logging.warning(f"{str(ch)}  FLOOD WAIT {e.value}")
+                logging.error(f"{str(ch)}  FLOOD WAIT {e.value}")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
         else:
             sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
@@ -108,7 +109,8 @@ async def send_message_to_tg(ch, text_message):
 
 async def join_chats_to_tg(ch):
     joined_channels = []
-    app = Client(account_name, api_id=app_id, api_hash=api_hash)
+    settings = await get_settings("join")
+    app = Client(settings.account)
     await app.connect()
     try:
         await app.join_chat(str(ch).replace("https://t.me/", ""))
