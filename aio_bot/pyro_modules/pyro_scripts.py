@@ -11,9 +11,9 @@ import logging
 from db_models import Message, Setting
 from psql_core.utills import insert_message, get_settings
 
-account_name = "ignat"
-app_id = 28644656
-api_hash = "b79872c0dd5060dd9e6f70f237121810"
+#account_name = "ignat"
+#app_id = 28644656
+#api_hash = "b79872c0dd5060dd9e6f70f237121810"
 logging.basicConfig(level=logging.ERROR, filename="py_log.log", filemode="a")
 
 
@@ -73,7 +73,7 @@ async def send_message_to_tg(ch, text_message):
         print(ch, " :IS SENDED")
         await asyncio.sleep(3)
     except FloodWait as e:
-        if app.is_connected and e.value < 120:
+        if app.is_connected:
             if e.value < 120:
                 print("sleep time is: ", e.value)
                 await asyncio.sleep(e.value)
@@ -83,7 +83,6 @@ async def send_message_to_tg(ch, text_message):
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
         else:
             sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
-            return sended_message
     except BadRequest as e:
         print(str(ch), " SENDING ERROR IS", e.NAME)
         logging.error(f"{str(ch)}  SENDING ERROR IS {e.NAME}")

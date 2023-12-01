@@ -8,7 +8,7 @@ from pyrogram import Client
 from pyrogram.errors import FloodWait, BadRequest, Forbidden, Flood
 from sqlalchemy.orm import sessionmaker
 
-from aio_bot.handlers import bot, send_stats_to_user_test, send_stats_to_user
+from aio_bot.handlers import bot, send_stats_to_user_test
 from aio_bot.pyro_modules.pyro_scripts import send_message_to_tg
 from apscheduller.jobs.sending_job import count_messages, channels_error
 from db_models import Schedule, engine, Setting, Account, Channel
