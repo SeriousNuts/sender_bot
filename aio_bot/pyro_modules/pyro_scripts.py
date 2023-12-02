@@ -82,6 +82,7 @@ async def send_message_to_tg(ch, text_message):
             else:
                 logging.error(f"{str(ch)}  FLOOD WAIT {e.value}")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
+                sended_message.flood_wait_time = e.value
         else:
             sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
     except BadRequest as e:
