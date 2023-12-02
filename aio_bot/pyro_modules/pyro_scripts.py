@@ -14,7 +14,6 @@ from psql_core.utills import insert_message, get_settings
 #account_name = "ignat"
 #app_id = 28644656
 #api_hash = "b79872c0dd5060dd9e6f70f237121810"
-logging.basicConfig(level=logging.ERROR, filename="py_log.log", filemode="a")
 
 
 # отправляем запрос на регистрацию

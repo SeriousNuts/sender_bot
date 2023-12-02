@@ -161,9 +161,6 @@ async def my_callback_foo(query: CallbackQuery, callback_data: IdCallbackFactory
     await bot.send_message(callback_data.owner_id, f"Сообщение удалено")
 
 
-
-
-
 async def send_stats_to_user_test(tg_id):
     if tg_id is None:
         tg_id = "6655978580"

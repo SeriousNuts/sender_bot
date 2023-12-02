@@ -5,6 +5,7 @@ from pytz import utc
 
 from apscheduller.jobs.sending_job import get_schedules
 from apscheduller.scheduler_conf import jobstores, executors, job_defaults
+
 scheduler = AsyncIOScheduler()
 
 scheduler.add_job(get_schedules, "interval", seconds=3)

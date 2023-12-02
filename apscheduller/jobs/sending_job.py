@@ -1,3 +1,5 @@
+import asyncio
+import logging
 from datetime import timedelta
 
 from sqlalchemy import func
@@ -7,14 +9,15 @@ from aio_bot.handlers import bot
 from aio_bot.pyro_modules.pyro_scripts import *
 from db_models import engine, Schedule
 from aio_bot.pyro_modules.pyro_scripts import get_channels
-
+logging.basicConfig(level=logging.DEBUG, filename="py_log.log", filemode="a")
 Session = sessionmaker(bind=engine)
 session = Session()
 
 
 async def get_schedules():
     schedules = session.query(Schedule).filter(
-        Schedule.status != "active", Schedule.status != "test", func.extract('minute', func.now() - Schedule.next_sending) > 0
+        Schedule.status != "active", Schedule.status != "test",
+        func.extract('minute', func.now() - Schedule.next_sending) > 0
     ).all()
     # update the status column for each user
     for s in schedules:
@@ -69,3 +72,6 @@ async def send_stats_to_user(number_mes, suc_mes, ban_mes, flood_mes, tg_id, ban
                                   f"{ban_ch} \n"
                                   f"В {flood_mes} чатах сообщение не отправлено из-за ограничений флуд фильтра канала"
                                   f"список чатов куда сообщение не ушло из-за ограничений телеграма:\n {flood_ch}")
+
+
+
