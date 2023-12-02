@@ -9,7 +9,7 @@ from aio_bot.handlers import bot
 from aio_bot.pyro_modules.pyro_scripts import *
 from db_models import engine, Schedule
 from aio_bot.pyro_modules.pyro_scripts import get_channels
-logging.basicConfig(level=logging.DEBUG, filename="py_log.log", filemode="a")
+logging.basicConfig(level=logging.ERROR, filename="py_log.log", filemode="a")
 Session = sessionmaker(bind=engine)
 session = Session()
 
@@ -58,7 +58,7 @@ def channels_error(sended_messages, status):
     errors_messages = []
     for s in sended_messages:
         if s.status == status:
-            errors_messages.append(s.ch)
+            errors_messages.append(s.channel)
     return errors_messages
 
 
