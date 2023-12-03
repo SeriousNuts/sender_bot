@@ -74,15 +74,16 @@ async def send_message_to_tg(ch, text_message):
     except FloodWait as e:
         if app.is_connected:
             if e.value < 9999:
-                print("sleep time is: ", e.value)
+                logging.error(f"{str(ch)} FLOOD WAIT MESSAGE WILL BE SENNDED IN LESS {e.value} SECONDS")
+                sended_message.set_flood_wait_time(e.value)
                 await asyncio.sleep(e.value)
                 await app.send_message(str(ch).replace("https://t.me/", ""), text_message)
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=ch)
                 await asyncio.sleep(15)
             else:
-                logging.error(f"{str(ch)}  FLOOD WAIT {e.value}")
+                logging.error(f"{str(ch)} FLOOD WAIT {e.value} NOT SENDED")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
-                sended_message.flood_wait_time = e.value
+                sended_message.set_flood_wait_time(e.value)
         else:
             sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
     except BadRequest as e:
@@ -95,8 +96,9 @@ async def send_message_to_tg(ch, text_message):
         sended_message.set_message(text=text_message, sending_date=datetime.now(), status=1, channel=ch)
     except Flood as e:
         print(str(ch), " SENDING ERROR IS", e.NAME)
-        logging.error(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
+        logging.error(f"{str(ch)}  SENDING ERROR IS {e.NAME} WAIT TIME IS {e.value}")
         sended_message.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
+        sended_message.set_flood_wait_time(e.value)
     except KeyError as e:
         print(str(ch), " SENDING ERROR IS", str(e))
         logging.error(f"{str(ch)}  SENDING ERROR IS {str(e)}")

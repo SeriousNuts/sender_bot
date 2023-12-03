@@ -34,6 +34,9 @@ class Message(Base):
         self.status = status
         self.channel = channel
 
+    def set_flood_wait_time(self, flood_wait_time):
+        self.flood_wait_time = flood_wait_time
+
 
 class Account(Base):
     __tablename__ = 'accounts'
@@ -48,6 +51,7 @@ class Account(Base):
         self.app_id = app_id
         self.api_hash = api_hash
         self.status = status
+
 
 
 class User(Base):
