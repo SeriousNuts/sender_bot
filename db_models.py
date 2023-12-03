@@ -45,13 +45,13 @@ class Account(Base):
     app_id = Column(Integer)
     api_hash = Column(String)
     status = Column(String)
+    last_use = Column(DateTime)
 
     def account(self, name, app_id, api_hash, status):
         self.name = name
         self.app_id = app_id
         self.api_hash = api_hash
         self.status = status
-
 
 
 class User(Base):

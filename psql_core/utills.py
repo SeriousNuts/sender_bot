@@ -1,5 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
+from sqlalchemy import func, select
 from sqlalchemy.orm import sessionmaker
 
 from db_models import Account, engine, Schedule, Setting
@@ -9,7 +10,7 @@ session = Session()
 
 
 async def insert_account(tg_id, api_code, api_hash, name):
-    status = "0"
+    status = "on"
     account = Account(name, tg_id, api_code, api_hash, status)
     session.add(account)
     session.commit()
@@ -50,3 +51,18 @@ async def get_settings(type_s):
     setting = session.query(Setting).filter(Setting.type == type_s).first()
     account = session.query(Account).filter(Account.name == setting.account).first()
     return setting, account
+
+
+async def change_account_db(type_s):
+    account = session.query(Account).filter(Account.last_use == select([func.min(Account.last_use)]),
+                                            Account.status == "on").first()
+    account.last_use = account.last_use + timedelta(minutes=30)
+    setting = session.query(Setting).filter(Setting.type == type_s).first()
+    setting.account = account.name
+    session.add(account)
+    session.add(setting)
+    session.commit()
+
+
+
+
