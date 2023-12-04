@@ -1,8 +1,9 @@
+from datetime import timedelta, datetime
+from enum import Enum
+
 from sqlalchemy import create_engine, Column, Integer, String, BigInteger, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-import datetime
-from enum import Enum
 
 engine = create_engine("postgresql://postgreadmin:738818@89.108.114.174:3090/sender_bot")
 Base = declarative_base()
@@ -45,13 +46,16 @@ class Account(Base):
     app_id = Column(Integer)
     api_hash = Column(String)
     status = Column(String)
-    last_use = Column(DateTime)
+    last_use = Column(DateTime())
 
     def account(self, name, app_id, api_hash, status):
         self.name = name
         self.app_id = app_id
         self.api_hash = api_hash
         self.status = status
+
+    def last_use_up(self, period):
+        self.last_use = datetime.now() + timedelta(minutes=period)
 
 
 class User(Base):

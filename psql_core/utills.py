@@ -1,6 +1,7 @@
+import asyncio
 from datetime import datetime, timedelta
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.orm import sessionmaker
 
 from db_models import Account, engine, Schedule, Setting
@@ -54,9 +55,9 @@ async def get_settings(type_s):
 
 
 async def change_account_db(type_s):
-    account = session.query(Account).filter(Account.last_use == select([func.min(Account.last_use)]),
-                                            Account.status == "on").first()
-    account.last_use = account.last_use + timedelta(minutes=30)
+    min_last_use = session.query(Account.last_use).order_by(Account.last_use).first()
+    account = session.query(Account).filter(Account.last_use == min_last_use[0]).first()
+    account.last_use_up(30)
     setting = session.query(Setting).filter(Setting.type == type_s).first()
     setting.account = account.name
     session.add(account)
