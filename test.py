@@ -10,18 +10,18 @@ from sqlalchemy.orm import sessionmaker
 
 from aio_bot.handlers import bot, send_stats_to_user_test
 from aio_bot.pyro_modules.pyro_scripts import send_message_to_tg
-from apscheduller.jobs.sending_job import count_messages, channels_error
+from apscheduller.jobs.sending_job import count_messages, channels_error, send_stats_to_user
 from db_models import Schedule, engine, Setting, Account, Channel
 
 # account_name = "anatoly"
 # app_id = 27544239
 # api_hash = "7349da523b2a09c4e502ca71e26c4625"
-account_name = "vasily"
-app_id = 25180332
-api_hash = "539ab72d422f642484190f3a046170b9"
-#account_name = "ignat"
-#app_id = 28644656
-#api_hash = "b79872c0dd5060dd9e6f70f237121810"
+#account_name = "vasily"
+#app_id = 25180332
+#api_hash = "539ab72d422f642484190f3a046170b9"
+account_name = "ignat"
+app_id = 28644656
+api_hash = "b79872c0dd5060dd9e6f70f237121810"
 logging.basicConfig(level=logging.ERROR, filename="join_log.log", filemode="a")
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -201,8 +201,14 @@ def insert_channels():
     session.commit()
 
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(joing_chat())
+async def get_chats():
+    app = Client(account_name, api_id=app_id, api_hash=api_hash)
+    await app.connect()
+    async for dialog in app.get_dialogs():
+        print(f"{dialog.chat.title}; https://t.me/{dialog.chat.username}")
+    await app.disconnect()
+
+
 # asyncio.run(get_schedules())
 # asyncio.run(main())
 # asyncio.run(get_bio())
