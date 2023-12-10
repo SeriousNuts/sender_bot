@@ -65,12 +65,13 @@ async def send_message_to_tg(ch, text_message):
     sended_message = Message()
     settings, account = await get_settings("send")
     app = Client(settings.account, api_id=account.app_id, api_hash=account.api_hash)
+    sleep_time = 60
     await app.connect()
     try:
         await app.send_message(str(ch).replace("https://t.me/", ""), text_message)
         sended_message.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=ch)
         print(ch, " :IS SENDED")
-        await asyncio.sleep(45)
+        await asyncio.sleep(sleep_time)
     except FloodWait as e:
         if app.is_connected:
             if e.value < 5000:
@@ -79,7 +80,7 @@ async def send_message_to_tg(ch, text_message):
                 await asyncio.sleep(e.value)
                 await app.send_message(str(ch).replace("https://t.me/", ""), text_message)
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=ch)
-                await asyncio.sleep(15)
+                await asyncio.sleep(sleep_time)
             else:
                 logging.error(f"{str(ch)} FLOOD WAIT {e.value} NOT SENDED")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
