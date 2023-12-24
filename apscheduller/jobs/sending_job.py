@@ -72,7 +72,7 @@ async def send_stats_to_user(number_mes, suc_mes, ban_mes, flood_mes, tg_id, ban
                f"В {flood_mes} чатах сообщение не отправлено из-за ограничений флуд фильтра канала" +
                f"список чатов куда сообщение не ушло из-за ограничений телеграма:\n {flood_ch}")
     if len(message) >= 4090:
-        message = message[0:4000]
+        message = message[1:4000]
     if tg_id is None:
         tg_id = "6655978580"
     bot.send_message(tg_id, message)

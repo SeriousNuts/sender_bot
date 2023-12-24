@@ -19,12 +19,12 @@ from db_models import Schedule, engine, Setting, Account, Channel
 #account_name = "vasily"
 #app_id = 25180332
 #api_hash = "539ab72d422f642484190f3a046170b9"
-#account_name = "ignat"
-#app_id = 28644656
-#api_hash = "b79872c0dd5060dd9e6f70f237121810"
-account_name = "andrey"
-app_id = 29606573
-api_hash = "dead8a41ea2b460d8fa2a01c0a81dd51"
+account_name = "ignat"
+app_id = 28644656
+api_hash = "b79872c0dd5060dd9e6f70f237121810"
+#account_name = "andrey"
+#app_id = 29606573
+#api_hash = "dead8a41ea2b460d8fa2a01c0a81dd51"
 logging.basicConfig(level=logging.ERROR, filename="join_log.log", filemode="a")
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -213,7 +213,7 @@ async def get_chats():
 
 
 # asyncio.run(get_schedules())
-asyncio.run(main())
+#asyncio.run(main())
 #asyncio.run(get_chats())
-# loop = asyncio.get_event_loop()
-# loop.run_until_complete(test_send())
+loop = asyncio.get_event_loop()
+loop.run_until_complete(joing_chat())
