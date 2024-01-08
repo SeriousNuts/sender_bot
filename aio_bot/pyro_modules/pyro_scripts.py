@@ -74,7 +74,7 @@ async def send_message_to_tg(ch, text_message):
         await asyncio.sleep(sleep_time)
     except FloodWait as e:
         if app.is_connected:
-            if e.value < 5000:
+            if e.value < 300:
                 logging.error(f"{datetime.now()} : {str(ch)} FLOOD WAIT MESSAGE WILL BE SENNDED IN LESS {e.value} SECONDS")
                 sended_message.set_flood_wait_time(e.value)
                 await asyncio.sleep(e.value)
