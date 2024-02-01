@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, Column, Integer, String, BigInteger, DateT
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-engine = create_engine("postgresql://postgreadmin:738818@89.108.114.174:3090/sender_bot")
+engine = create_engine("postgresql://postgreadmin:738818@89.108.77.17:3090/sender_bot")
 Base = declarative_base()
 
 
