@@ -55,15 +55,13 @@ async def get_settings(type_s):
 
 
 async def change_account_db(type_s):
-    min_last_use = session.query(Account.last_use).order_by(Account.last_use).first()
-    account = session.query(Account).filter(Account.last_use == min_last_use[0]).first()
-    account.last_use_up(30)
+    accounts = session.query(Account).filter(Account.status == 'on').all()
     setting = session.query(Setting).filter(Setting.type == type_s).first()
-    setting.account = account.name
-    session.add(account)
+    for i, a in enumerate(accounts):
+        if a.name == setting.account:
+            setting.account = accounts[(i + 1) % len(accounts)].name
+            a.last_use_up(30)
+            session.add(a)
+            break
     session.add(setting)
     session.commit()
-
-
-
-

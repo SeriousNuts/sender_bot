@@ -8,29 +8,29 @@ from pyrogram import Client
 from pyrogram.errors import FloodWait, BadRequest, Forbidden, Flood
 from sqlalchemy.orm import sessionmaker
 
-from aio_bot.handlers import bot, send_stats_to_user_test
-from aio_bot.pyro_modules.pyro_scripts import send_message_to_tg
+#from aio_bot.handlers import bot, send_stats_to_user_test
+#from aio_bot.pyro_modules.pyro_scripts import send_message_to_tg
 from apscheduller.jobs.sending_job import count_messages, channels_error, send_stats_to_user
 from db_models import Schedule, engine, Setting, Account, Channel
 
-#account_name = "anatoly"
-#app_id = 27544239
-#api_hash = "7349da523b2a09c4e502ca71e26c4625"
-#account_name = "vasily"
-#app_id = 25180332
-#api_hash = "539ab72d422f642484190f3a046170b9"
-#account_name = "ignat"
-#app_id = 28644656
-#api_hash = "b79872c0dd5060dd9e6f70f237121810"
-#account_name = "andrey"
-#app_id = 29606573
-#api_hash = "dead8a41ea2b460d8fa2a01c0a81dd51"
-account_name = "dmitry"
-app_id = 22384224
-api_hash = "a385b33b68d70b9de69517c7a14f1156"
-#account_name = "evgeny"
-#app_id = 27151682
-#api_hash = "2044598f7e9b22f61f6297985aa6d9ec"
+# account_name = "anatoly"
+# app_id = 27544239
+# api_hash = "7349da523b2a09c4e502ca71e26c4625"
+# account_name = "vasily"
+# app_id = 25180332
+# api_hash = "539ab72d422f642484190f3a046170b9"
+# account_name = "ignat"
+# app_id = 28644656
+# api_hash = "b79872c0dd5060dd9e6f70f237121810"
+# account_name = "andrey"
+# app_id = 29606573
+# api_hash = "dead8a41ea2b460d8fa2a01c0a81dd51"
+# account_name = "dmitry"
+# app_id = 22384224
+# api_hash = "a385b33b68d70b9de69517c7a14f1156"
+account_name = "evgeny"
+app_id = 27151682
+api_hash = "2044598f7e9b22f61f6297985aa6d9ec"
 
 logging.basicConfig(level=logging.ERROR, filename="join_log.log", filemode="a")
 Session = sessionmaker(bind=engine)
@@ -147,9 +147,6 @@ def get_channels_py():
     return channels
 
 
-async def send():
-    await send_stats_to_user_test("860176121")
-
 
 async def get_schedules():
     schedules = session.query(Schedule).filter(
@@ -213,10 +210,13 @@ async def get_chats():
     await app.disconnect()
 
 
-#asyncio.run(get_schedules())
-#asyncio.run(main())
-#asyncio.run(get_chats())
-#loop = asyncio.get_event_loop()
-#loop.run_until_complete(joing_chat())
+# asyncio.run(get_schedules())
+# asyncio.run(main())
+# asyncio.run(get_chats())
+# loop = asyncio.get_event_loop()
+# loop.run_until_complete(joing_chat())
 
-insert_acc()
+# insert_acc()
+
+
+

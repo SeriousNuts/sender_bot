@@ -7,6 +7,6 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 
+# задание для смены аккаунта раз в заданный интервал
 async def change_account():
     await change_account_db("send")
-

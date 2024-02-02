@@ -23,13 +23,11 @@ async def get_schedules():
     # update the status column for each user
     for s in schedules:
         s.status = 'active'
-    # commit the changes
     session.commit()
     channels = get_channels()
     for s in schedules:
         sended_messages = []
         for ch in channels:
-            # print(s.text)
             sm = await send_message_to_tg(text_message=s.text, ch=ch)  # получаем статус отпр сообщения
             sended_messages.append(sm)
         s.status = 'work'
@@ -51,7 +49,6 @@ def count_messages(sent_messages, code):
     count = {}
     for s in sent_messages:
         count[s.status] = count.get(s.status, 0) + 1
-
     return count.get(code, 0)
 
 
@@ -75,4 +72,7 @@ async def send_stats_to_user(number_mes, suc_mes, ban_mes, flood_mes, tg_id, ban
         message = message[1:4000]
     if tg_id is None:
         tg_id = "6655978580"
-    bot.send_message(tg_id, message)
+    try:
+        bot.send_message(tg_id, message)
+    except Exception as e:
+        logging.error(f"send stats to user error: {e} \n error in {e.__traceback__}")
