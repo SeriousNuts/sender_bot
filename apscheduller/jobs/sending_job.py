@@ -39,7 +39,7 @@ async def get_schedules():
         flood_mes = count_messages(sended_messages, 3) + count_messages(sended_messages, 1)
         ban_ch = channels_error(sended_messages, 2)
         flood_ch = channels_error(sended_messages, 3)
-        await send_stats_to_user(number_mes=number_mes, suc_mes=suc_mes, ban_mes=ban_mes, flood_mes=flood_mes,
+        send_stats_to_user(number_mes=number_mes, suc_mes=suc_mes, ban_mes=ban_mes, flood_mes=flood_mes,
                                  tg_id=s.owner_tg_id, ban_ch=ban_ch, flood_ch=flood_ch)
 
     session.commit()
@@ -60,7 +60,7 @@ def channels_error(sended_messages, status):
     return errors_messages
 
 
-async def send_stats_to_user(number_mes, suc_mes, ban_mes, flood_mes, tg_id, ban_ch, flood_ch):
+def send_stats_to_user(number_mes, suc_mes, ban_mes, flood_mes, tg_id, ban_ch, flood_ch):
     message = (f"Совершена рассылка \n " +
                f"Успешно отправлено в {suc_mes} чатов из {number_mes} \n" +
                f"В {ban_mes} чатах получен бан \n" +

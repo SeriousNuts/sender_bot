@@ -9,11 +9,7 @@ from pyrogram.errors import FloodWait, BadRequest, Forbidden, Flood, SessionPass
 import logging
 
 from db_models import Message, Setting
-from psql_core.utills import insert_message, get_settings
-
-#account_name = "ignat"
-#app_id = 28644656
-#api_hash = "b79872c0dd5060dd9e6f70f237121810"
+from psql_core.utills import insert_message, get_settings, change_account_db
 
 
 # отправляем запрос на регистрацию
@@ -74,8 +70,7 @@ async def send_message_to_tg(ch, text_message):
         await asyncio.sleep(sleep_time)
     except FloodWait as e:
         if app.is_connected:
-            if e.value < 300:
-                logging.error(f"{datetime.now()} : {str(ch)} FLOOD WAIT MESSAGE WILL BE SENNDED IN LESS {e.value} SECONDS")
+            if e.value < settings.max_wait_time:
                 sended_message.set_flood_wait_time(e.value)
                 await asyncio.sleep(e.value)
                 await app.send_message(str(ch).replace("https://t.me/", ""), text_message)
@@ -85,6 +80,7 @@ async def send_message_to_tg(ch, text_message):
                 logging.error(f"{datetime.now()} : {str(ch)} FLOOD WAIT {e.value} NOT SENDED")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
                 sended_message.set_flood_wait_time(e.value)
+                await change_account_db('send')
         else:
             sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
     except BadRequest as e:
@@ -95,11 +91,6 @@ async def send_message_to_tg(ch, text_message):
         print(str(ch), " SENDING ERROR IS", e.NAME)
         logging.error(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {e.NAME}")
         sended_message.set_message(text=text_message, sending_date=datetime.now(), status=1, channel=ch)
-    except Flood as e:
-        print(str(ch), " SENDING ERROR IS", e.NAME)
-        logging.error(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {e.NAME} WAIT TIME IS {e.value}")
-        sended_message.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
-        sended_message.set_flood_wait_time(e.value)
     except KeyError as e:
         print(str(ch), " SENDING ERROR IS", str(e))
         logging.error(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {str(e)}")
