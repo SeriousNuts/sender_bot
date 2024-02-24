@@ -1,21 +1,19 @@
-import asyncio
-import logging
 from datetime import timedelta
 
-import sqlalchemy
 from sqlalchemy import func
 from sqlalchemy.orm import sessionmaker
 
 from aio_bot.handlers import bot
 from aio_bot.pyro_modules.pyro_scripts import *
-from db_models import engine, Schedule
 from aio_bot.pyro_modules.pyro_scripts import get_channels
+from db_models import engine, Schedule
 
 logging.basicConfig(level=logging.ERROR, filename="py_log.log", filemode="a")
 Session = sessionmaker(bind=engine)
 session = Session()
 
 
+# noinspection PyBroadException
 async def get_schedules():
     schedules = session.query(Schedule).filter(
         Schedule.status != "active", Schedule.status != "test",
@@ -23,7 +21,11 @@ async def get_schedules():
     ).all()
     for s in schedules:
         s.status = 'active'
+    try:
         session.commit()
+    except Exception as e:
+        logging.error(f"get schedulles error is {e.__traceback__}")
+        session.rollback()
     return schedules
 
 

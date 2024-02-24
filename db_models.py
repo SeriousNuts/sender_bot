@@ -4,8 +4,15 @@ from enum import Enum
 from sqlalchemy import create_engine, Column, Integer, String, BigInteger, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-
-engine = create_engine("postgresql://postgreadmin:738818@89.108.77.17:3090/sender_bot")
+import configparser
+config = configparser.ConfigParser()
+config.read('config.ini')
+username = config['secrets']['username']
+password = config['secrets']['password']
+server_ip = config['secrets']['server_ip']
+server_port = config['secrets']['server_port']
+db = config['secrets']['db']
+engine = create_engine(f"postgresql://{username}:{password}@{server_ip}:{server_port}/{db}")
 Base = declarative_base()
 
 
@@ -42,7 +49,7 @@ class Message(Base):
 class Account(Base):
     __tablename__ = 'accounts'
     id = Column(Integer, primary_key=True)
-    name = Column(String)
+    name = Column(String, unique=True)
     app_id = Column(Integer)
     api_hash = Column(String)
     status = Column(String)
