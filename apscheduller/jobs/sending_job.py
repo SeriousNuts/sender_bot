@@ -2,6 +2,7 @@ import asyncio
 import logging
 from datetime import timedelta
 
+import sqlalchemy
 from sqlalchemy import func
 from sqlalchemy.orm import sessionmaker
 
@@ -20,17 +21,28 @@ async def get_schedules():
         Schedule.status != "active", Schedule.status != "test",
         func.extract('minute', func.now() - Schedule.next_sending) > 0
     ).all()
-    # update the status column for each user
     for s in schedules:
         s.status = 'active'
-    session.commit()
-    channels = get_channels()
+        session.commit()
+    return schedules
+
+
+# noinspection DuplicatedCode
+async def send_messages():
+    channels = get_channels()   # получаем список каналов
+    schedules = await get_schedules()  # получаем список заданий
     for s in schedules:
         sended_messages = []
+        send_tasks = []
         for ch in channels:
-            sm = await send_message_to_tg(text_message=s.text, ch=ch)  # получаем статус отпр сообщения
+            send_task = asyncio.create_task(send_message_to_tg(text_message=s.text, ch=ch))
+            send_tasks.append(send_task)
+        await asyncio.gather(*send_tasks)  # ожидаем завершения всех задач на отправку сообщений
+
+        for send_task in send_tasks:
+            sm = send_task.result()  # получаем результат отправки сообщения
             sended_messages.append(sm)
-        s.status = 'work'
+
         s.last_sening = datetime.now()
         s.next_sending = datetime.now() + timedelta(minutes=s.period)
         number_mes = len(sended_messages)
@@ -40,8 +52,8 @@ async def get_schedules():
         ban_ch = channels_error(sended_messages, 2)
         flood_ch = channels_error(sended_messages, 3)
         send_stats_to_user(number_mes=number_mes, suc_mes=suc_mes, ban_mes=ban_mes, flood_mes=flood_mes,
-                                 tg_id=s.owner_tg_id, ban_ch=ban_ch, flood_ch=flood_ch)
-
+                           tg_id=s.owner_tg_id, ban_ch=ban_ch, flood_ch=flood_ch)
+        s.status = 'work'
     session.commit()
 
 
