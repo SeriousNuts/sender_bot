@@ -54,6 +54,8 @@ class Account(Base):
     api_hash = Column(String)
     status = Column(String)
     last_use = Column(DateTime())
+    owner_id = Column(BigInteger)
+    session_token = Column(String)
 
     def account(self, name, app_id, api_hash, status):
         self.name = name
@@ -91,7 +93,7 @@ class Schedule(Base):
     next_sending = Column(DateTime())
     status = Column(String)
     text = Column(String)
-    owner_tg_id = Column(String)
+    owner_tg_id = Column(BigInteger)
 
 
 class Setting(Base):

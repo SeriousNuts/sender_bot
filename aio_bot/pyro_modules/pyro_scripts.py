@@ -44,7 +44,6 @@ async def check_client_code(code, app, phone_number_tg, phone_hash_tg):
     app.disconnect()
     return result
 
-
 def get_channels():
     channels = []
     path = os.getcwd()
