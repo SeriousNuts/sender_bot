@@ -1,6 +1,7 @@
 /config.ini
-/py_log.log
 /migration/
-/andrey.session
 /*.session
 /test.py
+/*.log
+/*.csv
+/*.txt
