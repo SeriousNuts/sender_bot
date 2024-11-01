@@ -26,7 +26,7 @@ async def add_account(app_id_tg, api_hash_tg, phone_number_tg):
         return e.NAME
 
 
-# проверяем код подтверждения клиента
+# проверяем код подтверждения клиента, если всё ок возвращаем строку сессии
 async def check_client_code(code, app, phone_number_tg, phone_hash_tg):
     print("code", code)
     print("phone_hash_tg", phone_hash_tg)
@@ -36,14 +36,13 @@ async def check_client_code(code, app, phone_number_tg, phone_hash_tg):
         if app.is_connected:
             auth = await app.sign_in(phone_number=phone_number_tg, phone_code=code,
                                      phone_code_hash=phone_hash_tg.phone_code_hash)
-            result = auth
+            result = app.export_session_string()
     except BadRequest as e:
         result = e.NAME + " : " + e.MESSAGE
     except SessionPasswordNeeded as e:
         result = e.NAME + " : " + e.MESSAGE
     app.disconnect()
     return result
-
 
 def get_channels():
     channels = []
@@ -77,7 +76,7 @@ async def send_message_to_tg(ch, text_message):
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=ch)
                 await asyncio.sleep(sleep_time)
             else:
-                logging.error(f"{datetime.now()} : {str(ch)} FLOOD WAIT {e.value} NOT SENDED")
+                logging.info(f"{datetime.now()} : {str(ch)} FLOOD WAIT {e.value} NOT SENDED")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
                 sended_message.set_flood_wait_time(e.value)
                 await change_account_db('send')
@@ -85,15 +84,15 @@ async def send_message_to_tg(ch, text_message):
             sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
     except BadRequest as e:
         print(str(ch), " SENDING ERROR IS", e.NAME)
-        logging.error(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {e.NAME}")
+        logging.info(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {e.NAME}")
         sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
     except Forbidden as e:
         print(str(ch), " SENDING ERROR IS", e.NAME)
-        logging.error(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {e.NAME}")
+        logging.info(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {e.NAME}")
         sended_message.set_message(text=text_message, sending_date=datetime.now(), status=1, channel=ch)
     except KeyError as e:
         print(str(ch), " SENDING ERROR IS", str(e))
-        logging.error(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {str(e)}")
+        logging.info(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {str(e)}")
         sended_message.set_message(text=text_message, sending_date=datetime.now(), status=5, channel=ch)
     await app.disconnect()
     sended_message.account_name = settings.account
