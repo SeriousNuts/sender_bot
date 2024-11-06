@@ -10,7 +10,7 @@ class SignUpForm(StatesGroup):
     app = State()
     chat_id = State()
 
-
+#форма начала рассылки сообщений
 class StartSendingForm(StatesGroup):
     text = State()
     interval = State()
