@@ -66,7 +66,7 @@ async def get_text(message: Message, state: FSMContext) -> None:
     await message.reply(f"Введите сообщение которое будем рассылать", reply_markup=ReplyKeyboardRemove())
     await state.set_state(StartSendingForm.text)
 
-
+#запрос интервала рассылки
 @dp.message(StartSendingForm.text)
 async def get_interval(message: Message, state: FSMContext) -> str:
     if message.text == "/cancel":
@@ -90,15 +90,15 @@ async def start_sending(message: Message, state: FSMContext) -> None:
     await state.update_data(interval=message.text)
     data = await state.get_data()
     interval = data["interval"]
-    text = data["text"]
-    await insert_schedule(period=interval, message_text=text, owner_tg_id=message.from_user.id)
+    sending_message_text = data["text"]
+    await insert_schedule(period=interval, message_text=sending_message_text, owner_tg_id=message.from_user.id)
     await message.reply(
         f"Будем отправлять ваш текст раз в {interval} минут. После каждой отправки вам придёт стаитсика",
         reply_markup=ReplyKeyboardRemove())
     await message.reply(f"Начинаю отправку", reply_markup=buttons.menu_keyboard)
     await state.clear()
 
-
+#действие на /start
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
     await message.reply(f"Привет, {hbold(message.from_user.full_name)}!", reply_markup=buttons.menu_keyboard)
@@ -165,3 +165,12 @@ async def send_stats_to_user_test(tg_id):
     if tg_id is None:
         tg_id = "6655978580"
     await bot.send_message(tg_id, f"Совершена рассылка ")
+
+
+@dp.message(F.text.lower() == "мой аккаунт")
+async def get_my_account(message: Message) -> None:
+    #получение информации об аккаунте
+    await bot.send_message(f"ID аккаунта:\n"
+                           f"Баланс:\n"
+                           f"Аккаунтов для рассылки:")
+

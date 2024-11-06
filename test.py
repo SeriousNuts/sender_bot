@@ -8,8 +8,8 @@ from pyrogram import Client
 from pyrogram.errors import FloodWait, BadRequest, Forbidden, Flood
 from sqlalchemy.orm import sessionmaker
 
-#from aio_bot.handlers import bot, send_stats_to_user_test
-#from aio_bot.pyro_modules.pyro_scripts import send_message_to_tg
+from aio_bot.handlers import bot
+from aio_bot.pyro_modules.pyro_scripts import send_message_to_tg
 from apscheduller.jobs.sending_job import count_messages, channels_error, send_stats_to_user
 from db_models import Schedule, engine, Setting, Account, Channel
 
@@ -28,9 +28,15 @@ from db_models import Schedule, engine, Setting, Account, Channel
 # account_name = "dmitry"
 # app_id = 22384224
 # api_hash = "a385b33b68d70b9de69517c7a14f1156"
-account_name = "evgeny"
-app_id = 27151682
-api_hash = "2044598f7e9b22f61f6297985aa6d9ec"
+#account_name = "evgeny"
+#app_id = 27151682
+#api_hash = "2044598f7e9b22f61f6297985aa6d9ec"
+#account_name = "george"
+#app_id = 29863550
+#api_hash = "f76a6879c71fdbcd77101d789d62dd9c"
+#account_name = "pelopy"
+#app_id = 20693649
+#api_hash = "a0e7761a55db4e18e6394268b60e297b"
 
 logging.basicConfig(level=logging.ERROR, filename="join_log.log", filemode="a")
 Session = sessionmaker(bind=engine)
@@ -43,8 +49,6 @@ async def main():
         all_chats = 0
         count = 0
         async for dialog in app.get_dialogs():
-            # chat = await app.get_chat(dialog.chat.id)
-            # print(dialog.chat.first_name or dialog.chat.title, app.get_chat(dialog.chat.id))
             try:
                 if dialog.chat.username is not None:
                     print(f"https://t.me/{dialog.chat.username}; username {dialog.chat.title} type: {dialog.chat.type}")
@@ -55,41 +59,22 @@ async def main():
         print(f"{count}/{all_chats}")
 
 
-async def get_bio():
-    async with Client("anatoly", app_id, api_hash) as app:
-        # chat = await app.get_chat("zapashdgu")
-        async for dialog in app.get_dialogs():
-            if dialog.chat.username == "zapashdgu":
-                bio = dialog.chat
-                print(bio)
-
-
 async def test_send():
     await bot.send_message("6655978580", "тестовое сообщение")
     await bot.session.close()
 
 
 async def joing_chat():
-    # chats = ["https://t.me/brukchattg", "https://t.me/TGPR_RealType"]
     chats = get_channels_py()
-    # print(chats)
     results = []
+    file = open("subs.txt", "w")
     for c in chats:
         res = await join_chats_to_tg_pyro(c)
         results.append(res)
         print(f"{chats.index(c)}/{len(chats)}")
 
-
-async def join_chats_to_tg_pyro_test(ch):
-    joined_channels = []
-    app = Client(account_name, api_id=app_id, api_hash=api_hash)
-    await app.connect()
-    await app.join_chat(str(ch).replace("https://t.me/", ""))
-    joined_channels.append(ch)
-    # .error(f"{str(ch)}  JOINED")
-    print(ch, " :IS JOINED")
-    await asyncio.sleep(60)
-    await app.disconnect()
+        file.write(f"{account_name}: {chats.index(c)}/{len(chats)} - {res}\n")
+    file.close()
 
 
 async def join_chats_to_tg_pyro(ch):
@@ -112,7 +97,7 @@ async def join_chats_to_tg_pyro(ch):
                 print(f"flood wait too long {e.value}")
                 logging.error(f"flood wait too long {e.value}")
                 await app.disconnect()
-                return 0
+                return f"{account_name} - flood wait too long on {ch}"
         else:
             return 0
     except BadRequest as e:
@@ -182,9 +167,9 @@ def insert_set():
     session.commit()
 
 
-def insert_acc():
+def insert_acc(status):
     account = Account()
-    account.status = "on"
+    account.status = status
     account.name = account_name
     account.api_hash = api_hash
     account.app_id = app_id
@@ -211,12 +196,13 @@ async def get_chats():
 
 
 # asyncio.run(get_schedules())
-# asyncio.run(main())
+#asyncio.run(main())
 # asyncio.run(get_chats())
-# loop = asyncio.get_event_loop()
-# loop.run_until_complete(joing_chat())
+#loop = asyncio.get_event_loop()
+#loop.run_until_complete(joing_chat())
 
-# insert_acc()
+#insert_acc("on")
+asyncio.run(main_test())
 
 
 
