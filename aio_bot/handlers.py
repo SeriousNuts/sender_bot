@@ -6,9 +6,10 @@ from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 from aiogram.utils.markdown import hbold
 
 from aio_bot import buttons, config
-from aio_bot.buttons import delete_sending_inline
+from aio_bot.buttons import *
 from aio_bot.callback_fabrics import get_keyboard_fab, IdCallbackFactory
 from aio_bot.models.Forms import StartSendingForm
+from db_models import User
 from psql_core.utills import *
 from aio_bot.pyro_modules.pyro_scripts import get_channels, send_message_to_tg, join_chats_to_tg
 
@@ -93,7 +94,7 @@ async def start_sending(message: Message, state: FSMContext) -> None:
     sending_message_text = data["text"]
     await insert_schedule(period=interval, message_text=sending_message_text, owner_tg_id=message.from_user.id)
     await message.reply(
-        f"Будем отправлять ваш текст раз в {interval} минут. После каждой отправки вам придёт стаитсика",
+        f"Будем отправлять ваш текст раз в {interval} минут. После каждой отправки вам придёт статистика",
         reply_markup=ReplyKeyboardRemove())
     await message.reply(f"Начинаю отправку", reply_markup=buttons.menu_keyboard)
     await state.clear()
@@ -101,6 +102,7 @@ async def start_sending(message: Message, state: FSMContext) -> None:
 #действие на /start
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
+    await insert_user(message.from_user.id)
     await message.reply(f"Привет, {hbold(message.from_user.full_name)}!", reply_markup=buttons.menu_keyboard)
 
 
@@ -136,11 +138,6 @@ async def test_handler(state: FSMContext) -> None:
     await state.clear()
 
 
-@dp.message(Command("menu"))
-async def menu(message: Message) -> None:
-    await bot.send_message(message.chat.id, "Меню", reply_markup=buttons.menu_keyboard)
-
-
 @dp.message(F.text.lower() == "мои рассылки")
 async def menu(message: Message) -> None:
     schedules = await get_user_schedules(str(message.from_user.id))
@@ -167,10 +164,13 @@ async def send_stats_to_user_test(tg_id):
     await bot.send_message(tg_id, f"Совершена рассылка ")
 
 
-@dp.message(F.text.lower() == "мой аккаунт")
+@dp.message(F.text.lower() == "menu")
 async def get_my_account(message: Message) -> None:
     #получение информации об аккаунте
-    await bot.send_message(f"ID аккаунта:\n"
+    await bot.send_message(message.from_user.id, "ID аккаунта:\n"
                            f"Баланс:\n"
-                           f"Аккаунтов для рассылки:")
+                           f"Аккаунтов для рассылки:", reply_markup=get_menu_inline_keyboard())
 
+@dp.callback_query(IdCallbackFactory.filter(F.action == "add_account"))
+async def my_callback_foo(query: CallbackQuery, callback_data: IdCallbackFactory):
+    await bot.send_message(callback_data.owner_id, f"Введите номер телефона с кодом страны без пробелов")

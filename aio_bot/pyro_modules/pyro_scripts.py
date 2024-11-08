@@ -55,49 +55,59 @@ def get_channels():
             channels.append(row['ссылка на канал'])
     return channels
 
+async def get_app_by_session_string(session_string):
+    return Client(session_string=session_string)
 
-async def send_message_to_tg(ch, text_message):
+
+async def get_channels_by_app(app):
+    channels = []
+    with app:
+        async for dialog in app.get_dialogs():
+            if dialog.chat.type == "ChatType.CHANNEL":
+                channels.append(dialog)
+    return channels
+
+async def send_message_to_tg(text_message, app, channels, settings):
     sended_message = Message()
-    settings, account = await get_settings("send")
-    app = Client(settings.account, api_id=account.app_id, api_hash=account.api_hash)
+    messages = []
     sleep_time = 30
-    await app.connect()
-    try:
-        await app.send_message(str(ch).replace("https://t.me/", ""), text_message)
-        sended_message.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=ch)
-        print(ch, " :IS SENDED")
-        await asyncio.sleep(sleep_time)
-    except FloodWait as e:
-        if app.is_connected:
-            if e.value < settings.max_wait_time:
-                sended_message.set_flood_wait_time(e.value)
-                await asyncio.sleep(e.value)
-                await app.send_message(str(ch).replace("https://t.me/", ""), text_message)
-                sended_message.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=ch)
-                await asyncio.sleep(sleep_time)
+    for ch in channels:
+        try:
+            await app.send_message(str(ch).replace("https://t.me/", ""), text_message)
+            sended_message.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=ch)
+            print(ch, " :IS SENDED")
+            await asyncio.sleep(sleep_time)
+        except FloodWait as e:
+            if app.is_connected:
+                if e.value < settings.max_wait_time:
+                    sended_message.set_flood_wait_time(e.value)
+                    await asyncio.sleep(e.value)
+                    await app.send_message(str(ch).replace("https://t.me/", ""), text_message)
+                    sended_message.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=ch)
+                    await asyncio.sleep(sleep_time)
+                else:
+                    logging.info(f"{datetime.now()} : {str(ch)} FLOOD WAIT {e.value} NOT SENDED")
+                    sended_message.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
+                    sended_message.set_flood_wait_time(e.value)
+                    await change_account_db('send')
             else:
-                logging.info(f"{datetime.now()} : {str(ch)} FLOOD WAIT {e.value} NOT SENDED")
-                sended_message.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
-                sended_message.set_flood_wait_time(e.value)
-                await change_account_db('send')
-        else:
+                sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
+        except BadRequest as e:
+            print(str(ch), " SENDING ERROR IS", e.NAME)
+            logging.info(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {e.NAME}")
             sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
-    except BadRequest as e:
-        print(str(ch), " SENDING ERROR IS", e.NAME)
-        logging.info(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {e.NAME}")
-        sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
-    except Forbidden as e:
-        print(str(ch), " SENDING ERROR IS", e.NAME)
-        logging.info(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {e.NAME}")
-        sended_message.set_message(text=text_message, sending_date=datetime.now(), status=1, channel=ch)
-    except KeyError as e:
-        print(str(ch), " SENDING ERROR IS", str(e))
-        logging.info(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {str(e)}")
-        sended_message.set_message(text=text_message, sending_date=datetime.now(), status=5, channel=ch)
-    await app.disconnect()
-    sended_message.account_name = settings.account
-    await insert_message(sended_message)
-    return sended_message
+        except Forbidden as e:
+            print(str(ch), " SENDING ERROR IS", e.NAME)
+            logging.info(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {e.NAME}")
+            sended_message.set_message(text=text_message, sending_date=datetime.now(), status=1, channel=ch)
+        except KeyError as e:
+            print(str(ch), " SENDING ERROR IS", str(e))
+            logging.info(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {str(e)}")
+            sended_message.set_message(text=text_message, sending_date=datetime.now(), status=5, channel=ch)
+        await insert_message(sended_message)
+        sended_message.account_name = app.get_me()
+        messages.append(sended_message)
+    return messages
 
 
 async def join_chats_to_tg(ch):
