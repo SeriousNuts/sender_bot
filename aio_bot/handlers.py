@@ -10,8 +10,9 @@ from aiogram.utils.markdown import hbold
 from aio_bot import buttons
 from aio_bot.buttons import *
 from aio_bot.callback_fabrics import get_keyboard_fab, IdCallbackFactory
-from aio_bot.models.Forms import StartSendingForm
-from aio_bot.pyro_modules.pyro_scripts import get_channels, send_message_to_tg, join_chats_to_tg
+from aio_bot.models.Forms import StartSendingForm, SignUpForm
+from aio_bot.pyro_modules.pyro_scripts import get_channels, send_message_to_tg, join_chats_to_tg, add_account, \
+    check_client_code
 from psql_core.utills import *
 
 config_ini = configparser.ConfigParser()
@@ -71,7 +72,8 @@ async def get_text(message: Message, state: FSMContext) -> None:
     await message.reply(f"Введите сообщение которое будем рассылать", reply_markup=ReplyKeyboardRemove())
     await state.set_state(StartSendingForm.text)
 
-#запрос интервала рассылки
+
+# запрос интервала рассылки
 @dp.message(StartSendingForm.text)
 async def get_interval(message: Message, state: FSMContext) -> str:
     if message.text == "/cancel":
@@ -103,7 +105,8 @@ async def start_sending(message: Message, state: FSMContext) -> None:
     await message.reply(f"Начинаю отправку", reply_markup=buttons.menu_keyboard)
     await state.clear()
 
-#действие на /start
+
+# действие на /start
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
     await insert_user(message.from_user.id)
@@ -170,11 +173,42 @@ async def send_stats_to_user_test(tg_id):
 
 @dp.message(F.text.lower() == "menu")
 async def get_my_account(message: Message) -> None:
-    #получение информации об аккаунте
+    # получение информации об аккаунте
     await bot.send_message(message.from_user.id, "ID аккаунта:\n"
-                           f"Баланс:\n"
-                           f"Аккаунтов для рассылки:", reply_markup=get_menu_inline_keyboard())
+                                                 f"Баланс:\n"
+                                                 f"Аккаунтов для рассылки:", reply_markup=get_menu_inline_keyboard())
+
 
 @dp.callback_query(IdCallbackFactory.filter(F.action == "add_account"))
-async def my_callback_foo(query: CallbackQuery, callback_data: IdCallbackFactory):
-    await bot.send_message(callback_data.owner_id, f"Введите номер телефона с кодом страны без пробелов")
+async def my_callback_foo(query: CallbackQuery, callback_data: IdCallbackFactory, state: FSMContext):
+    await bot.send_message(callback_data.owner_id, f"Введите номер телефона с кодом страны без пробелов для отмены "
+                                                   f"введите /cancel")
+    await state.set_state(SignUpForm.phone_number)
+
+
+dp.message(SignUpForm.phone_number)
+async def get_phone(message: Message, state: FSMContext) -> str:
+    if message.text == "/cancel":
+        print("/cancel")
+        await state.clear()
+        await message.reply(f"Добавление аккаунта отменено", reply_markup=buttons.menu_keyboard)
+        return ""
+    phone_code_hash, app = await add_account(phone_number_tg=message.text)
+    await state.update_data(phone_code_hash=phone_code_hash, app=app, phone_number=message.text)
+    await bot.send_message(message.chat.id, "Введите код")
+    await state.set_state(SignUpForm.user_input_code)
+
+
+dp.message(SignUpForm.user_input_code)
+async def get_code(message: Message, state: FSMContext) -> str:
+    data = await state.get_data()
+    app = data["app"]
+    phone_code_hash = data["phone_code_hash"]
+    phone_number = data["phone_number"]
+    result = await check_client_code(code=message.text, app=app, phone_number_tg=phone_number,
+                                     phone_hash_tg=phone_code_hash)
+    if not result.startswith("error"):
+        await bot.send_message(message.chat.id, "Аккаунт успешно добавлен")
+    else:
+        await bot.send_message(message.chat.id, "Ошибка при добавление аккаунта")
+    await state.clear()

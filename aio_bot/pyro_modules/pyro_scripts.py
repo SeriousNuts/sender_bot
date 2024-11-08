@@ -1,21 +1,26 @@
 import asyncio
+import configparser
 import csv
-from datetime import datetime
+import logging
 import os
 import uuid
+from datetime import datetime
 
 from pyrogram import Client
 from pyrogram.errors import FloodWait, BadRequest, Forbidden, Flood, SessionPasswordNeeded
-import logging
 
-from db_models import Message, Setting
+from db_models import Message
 from psql_core.utills import insert_message, get_settings, change_account_db
 
+config = configparser.ConfigParser()
+config.read('config.ini')
+api_id = int(config['secrets']['api_id'])
+api_hash = config['secrets']['api_hash']
 
 # отправляем запрос на регистрацию
-async def add_account(app_id_tg, api_hash_tg, phone_number_tg):
+async def add_account(phone_number_tg):
     name = str(uuid.uuid4())
-    app = Client(str(name), api_id=app_id_tg, api_hash=api_hash_tg)
+    app = Client(str(name), api_id=api_id, api_hash=api_hash, in_memory=True)
     if app.is_connected:
         await app.disconnect()
     await app.connect()
@@ -28,21 +33,19 @@ async def add_account(app_id_tg, api_hash_tg, phone_number_tg):
 
 # проверяем код подтверждения клиента, если всё ок возвращаем строку сессии
 async def check_client_code(code, app, phone_number_tg, phone_hash_tg):
-    print("code", code)
-    print("phone_hash_tg", phone_hash_tg)
-    print("phone_number_tg", phone_number_tg)
     result = ""
     try:
         if app.is_connected:
-            auth = await app.sign_in(phone_number=phone_number_tg, phone_code=code,
-                                     phone_code_hash=phone_hash_tg.phone_code_hash)
+            await app.sign_in(phone_number=phone_number_tg, phone_code=code,
+                              phone_code_hash=phone_hash_tg.phone_code_hash)
             result = app.export_session_string()
     except BadRequest as e:
-        result = e.NAME + " : " + e.MESSAGE
+        result = f"error {e.NAME} : {e.MESSAGE}"
     except SessionPasswordNeeded as e:
-        result = e.NAME + " : " + e.MESSAGE
-    app.disconnect()
+        result = f"error {e.NAME} : {e.MESSAGE}"
+    await app.disconect()
     return result
+
 
 def get_channels():
     channels = []
