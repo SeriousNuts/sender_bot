@@ -17,6 +17,18 @@ menu_s = [
         types.KeyboardButton(text="мои рассылки"),
     ],
 ]
+
+
+def get_menu_inline_keyboard():
+    inline_menu = [
+        [
+            types.InlineKeyboardButton(text="Добавить акаунт", callback_data="add_account")
+        ],
+    ]
+    menu_inline_keyboard = types.InlineKeyboardMarkup(inline_keyboard=inline_menu)
+    return menu_inline_keyboard
+
+
 cancel_keyboard = types.ReplyKeyboardMarkup(
     keyboard=cancel_s,
     resize_keyboard=True,

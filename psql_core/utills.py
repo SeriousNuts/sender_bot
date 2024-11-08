@@ -1,10 +1,8 @@
-import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from sqlalchemy import func, select, text
 from sqlalchemy.orm import sessionmaker
 
-from db_models import Account, engine, Schedule, Setting
+from db_models import Account, engine, Schedule, Setting, User
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -26,6 +24,15 @@ async def insert_schedule(period, message_text, owner_tg_id):
     schedule.owner_tg_id = owner_tg_id
     session.add(schedule)
     session.commit()
+
+async def insert_user(tg_id):
+    user = User()
+    user.tg_id = tg_id
+    try:
+        session.add(user)
+        session.commit()
+    except Exception as e:
+        print(e)
 
 
 async def get_user_schedules(owner_tg_id):

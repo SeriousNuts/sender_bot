@@ -5,6 +5,7 @@ from sqlalchemy import create_engine, Column, Integer, String, BigInteger, DateT
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import configparser
+
 config = configparser.ConfigParser()
 config.read('config.ini')
 username = config['secrets']['username']
@@ -54,8 +55,8 @@ class Account(Base):
     api_hash = Column(String)
     status = Column(String)
     last_use = Column(DateTime())
-    owner_id = Column(BigInteger)
-    session_token = Column(String)
+    owner_tg_id = Column(BigInteger, ForeignKey('users.tg_id'))
+    session_string = Column(String)
 
     def account(self, name, app_id, api_hash, status):
         self.name = name
@@ -77,6 +78,7 @@ class User(Base):
     channels = relationship("Channel")
 
 
+
 class Channel(Base):
     __tablename__ = 'channels'
     id = Column(Integer, primary_key=True)
@@ -93,12 +95,13 @@ class Schedule(Base):
     next_sending = Column(DateTime())
     status = Column(String)
     text = Column(String)
-    owner_tg_id = Column(BigInteger)
+    owner_tg_id = Column(BigInteger, ForeignKey('users.tg_id'))
+    setting = Column(Integer, ForeignKey('settings.id'))
 
 
 class Setting(Base):
     __tablename__ = 'settings'
     id = Column(Integer, primary_key=True)
-    account = Column(String)
-    max_wait_time = Column(Integer)
+    max_wait_time = Column(Integer)  # максимальное время между сообщениями
     type = Column(String)
+    account_id = Column(Integer, ForeignKey('accounts.id'))
