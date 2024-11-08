@@ -1,4 +1,6 @@
-from aiogram import Bot, Dispatcher, types, Router
+import configparser
+
+from aiogram import Bot, Dispatcher, Router
 from aiogram import F
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
@@ -9,12 +11,14 @@ from aio_bot import buttons, config
 from aio_bot.buttons import *
 from aio_bot.callback_fabrics import get_keyboard_fab, IdCallbackFactory
 from aio_bot.models.Forms import StartSendingForm
-from db_models import User
-from psql_core.utills import *
 from aio_bot.pyro_modules.pyro_scripts import get_channels, send_message_to_tg, join_chats_to_tg
+from psql_core.utills import *
 
-TOKEN = config.TOKEN
-PAYMENTS_TOKEN = config.PAYMENTS_TOKEN
+config_ini = configparser.ConfigParser()
+config_ini.read('config.ini')
+TOKEN = config_ini['secrets']['bot_token']
+PAYMENTS_TOKEN = config_ini['secrets']['payments_token']
+
 PRICE = types.LabeledPrice(label="Подписка на 1 месяц", amount=50 * 100)  # в копейках (руб)
 
 # All handlers should be attached to the Router (or Dispatcher)
