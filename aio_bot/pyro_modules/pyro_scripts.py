@@ -38,12 +38,13 @@ async def check_client_code(code, app, phone_number_tg, phone_hash_tg):
         if app.is_connected:
             await app.sign_in(phone_number=phone_number_tg, phone_code=code,
                               phone_code_hash=phone_hash_tg.phone_code_hash)
-            result = app.export_session_string()
+            result = await app.export_session_string()
     except BadRequest as e:
         result = f"error {e.NAME} : {e.MESSAGE}"
     except SessionPasswordNeeded as e:
         result = f"error {e.NAME} : {e.MESSAGE}"
-    await app.disconect()
+    await app.disconnect()
+    print(result)
     return result
 
 

@@ -9,7 +9,7 @@ from aiogram.utils.markdown import hbold
 
 from aio_bot import buttons
 from aio_bot.buttons import *
-from aio_bot.callback_fabrics import get_keyboard_fab, IdCallbackFactory
+from aio_bot.callback_fabrics import get_keyboard_delete_sending, DeleteSendingCallbackFactory, get_menu_inline_keyboard
 from aio_bot.models.Forms import StartSendingForm, SignUpForm
 from aio_bot.pyro_modules.pyro_scripts import get_channels, send_message_to_tg, join_chats_to_tg, add_account, \
     check_client_code
@@ -153,12 +153,13 @@ async def menu(message: Message) -> None:
     else:
         for s in schedules:
             await bot.send_message(message.from_user.id, f"Текст рассылки:\n {s.text}\n Период: {s.period}",
-                                   reply_markup=get_keyboard_fab(sending_id=s.id, tg_owner_id=str(message.from_user.id))
+                                   reply_markup=get_keyboard_delete_sending(sending_id=s.id,
+                                                                            tg_owner_id=str(message.from_user.id))
                                    )
 
 
-@dp.callback_query(IdCallbackFactory.filter(F.action == "delete_sending"))
-async def my_callback_foo(query: CallbackQuery, callback_data: IdCallbackFactory):
+@dp.callback_query(DeleteSendingCallbackFactory.filter(F.action == "delete_sending"))
+async def delete_schedule_callback(query: CallbackQuery, callback_data: DeleteSendingCallbackFactory):
     print("начало удаления")
     await delete_schedule(owner_tg_id=callback_data.owner_id, sending_id=callback_data.sending_id)
     print("удалено")
@@ -179,14 +180,16 @@ async def get_my_account(message: Message) -> None:
                                                  f"Аккаунтов для рассылки:", reply_markup=get_menu_inline_keyboard())
 
 
-@dp.callback_query(IdCallbackFactory.filter(F.action == "add_account"))
-async def my_callback_foo(query: CallbackQuery, callback_data: IdCallbackFactory, state: FSMContext):
-    await bot.send_message(callback_data.owner_id, f"Введите номер телефона с кодом страны без пробелов для отмены "
-                                                   f"введите /cancel")
+@dp.callback_query(F.data == "add_account")
+async def add_account_callback(callback: CallbackQuery, state: FSMContext):
+    await callback.message.edit_text(
+        text=f"Введите номер телефона с кодом страны без пробелов для отмены "
+             f"введите /cancel"
+    )
     await state.set_state(SignUpForm.phone_number)
 
 
-dp.message(SignUpForm.phone_number)
+@dp.message(SignUpForm.phone_number)
 async def get_phone(message: Message, state: FSMContext) -> str:
     if message.text == "/cancel":
         print("/cancel")
@@ -199,8 +202,8 @@ async def get_phone(message: Message, state: FSMContext) -> str:
     await state.set_state(SignUpForm.user_input_code)
 
 
-dp.message(SignUpForm.user_input_code)
-async def get_code(message: Message, state: FSMContext) -> str:
+@dp.message(SignUpForm.user_input_code)
+async def get_code(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
     app = data["app"]
     phone_code_hash = data["phone_code_hash"]
