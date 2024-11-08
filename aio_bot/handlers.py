@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 from aiogram.utils.markdown import hbold
 
-from aio_bot import buttons, config
+from aio_bot import buttons
 from aio_bot.buttons import *
 from aio_bot.callback_fabrics import get_keyboard_fab, IdCallbackFactory
 from aio_bot.models.Forms import StartSendingForm
