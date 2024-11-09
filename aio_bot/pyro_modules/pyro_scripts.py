@@ -79,6 +79,7 @@ async def send_message_to_tg(text_message, app, channels, account_name, schedule
             sended_message = Message()
             sended_message.sending_uuid = sending_uuid
             sended_message.account_name = account_name
+            sended_message.schedule_owner_id = schedule_owner_id
             try:
                 await app.send_message(chat_id=ch, text=text_message)
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=ch)
