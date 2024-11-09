@@ -29,6 +29,7 @@ class StatusMessage(Enum):
 class Message(Base):
     __tablename__ = 'messages'
     id = Column(Integer, primary_key=True)
+    sending_uuid = Column(String)
     text = Column(String)
     sending_date = Column(DateTime())
     status = Column(Integer, index=True)
