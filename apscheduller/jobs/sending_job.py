@@ -38,7 +38,8 @@ async def send_messages():
             app = await get_app_by_session_string(session_string=acc.session_string, app_name=acc.name)
             channels = await get_channels_by_app(app)
             tasks_queue.append(asyncio.create_task(send_message_to_tg(text_message=s.text, app=app, channels=channels,
-                                                                      account_name=acc.name)))
+                                                                      account_name=acc.name,
+                                                                      schedule_owner_id=s.owner_tg_id)))
     await asyncio.gather(*tasks_queue)  # ожидаем завершения всех задач на отправку сообщений
     for s in schedules:
         s.last_sening = datetime.now()

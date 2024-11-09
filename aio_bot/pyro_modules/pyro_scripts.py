@@ -70,7 +70,7 @@ async def get_channels_by_app(app):
                 channels.append(str(dialog.chat.username))
     return channels
 
-async def send_message_to_tg(text_message, app, channels, account_name):
+async def send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id):
     messages = []
     sleep_time = 1
     sending_uuid = uuid.uuid4()
