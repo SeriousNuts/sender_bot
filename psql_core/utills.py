@@ -42,11 +42,9 @@ async def insert_user(tg_id):
 
 
 async def get_user_schedules(owner_tg_id):
-    print("start getting sched")
     schedules = session.query(Schedule).filter(
         Schedule.owner_tg_id == owner_tg_id
     ).all()
-    print("stop getting sched")
     return schedules
 
 
@@ -78,3 +76,7 @@ async def change_account_db(type_s):
             break
     session.add(setting)
     session.commit()
+
+
+async def get_accounts_by_schedule(schedule):
+    return session.query(Account).filter(Account.owner_tg_id == schedule.owner_tg_id).all()
