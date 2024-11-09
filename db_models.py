@@ -51,18 +51,15 @@ class Account(Base):
     __tablename__ = 'accounts'
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
-    app_id = Column(Integer)
-    api_hash = Column(String)
     status = Column(String)
     last_use = Column(DateTime())
     owner_tg_id = Column(BigInteger, ForeignKey('users.tg_id'))
     session_string = Column(String)
 
-    def account(self, name, app_id, api_hash, status):
+    def account(self, name, status, session_string):
         self.name = name
-        self.app_id = app_id
-        self.api_hash = api_hash
         self.status = status
+        self.session_string = session_string
 
     def last_use_up(self, period):
         self.last_use = datetime.now() + timedelta(minutes=period)
@@ -71,12 +68,13 @@ class Account(Base):
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
-    tg_id = Column(BigInteger, index=True, unique=True)
+    tg_id = Column(BigInteger, unique=True)
     status = Column(String)
     last_pay_date_pay = Column(DateTime())
     subs_month = Column(Integer)
     channels = relationship("Channel")
-
+    accounts = relationship("Account")
+    schedules = relationship("Schedule")
 
 
 class Channel(Base):

@@ -8,10 +8,15 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 
-async def insert_account(tg_id, api_code, api_hash, name):
+async def insert_account(tg_id, name, session_string):
     status = "on"
-    account = Account(name, tg_id, api_code, api_hash, status)
+    account = Account()
+    account.account(name=name, status=status, session_string=session_string)
     session.add(account)
+    user = session.query(User).filter(
+        User.tg_id == tg_id
+    ).first()
+    user.accounts.append(account)
     session.commit()
 
 
@@ -24,6 +29,7 @@ async def insert_schedule(period, message_text, owner_tg_id):
     schedule.owner_tg_id = owner_tg_id
     session.add(schedule)
     session.commit()
+
 
 async def insert_user(tg_id):
     user = User()
