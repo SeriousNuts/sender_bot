@@ -92,7 +92,7 @@ async def send_message_to_tg(text_message, app, channels, account_name, schedule
                         sended_message.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=ch)
                         await asyncio.sleep(sleep_time)
                     else:
-                        logging.info(f"{datetime.now()} : {str(ch)} FLOOD WAIT {e.value} NOT SENDED")
+                        logging.debug(f"{datetime.now()} : {str(ch)} FLOOD WAIT {e.value} NOT SENDED")
                         sended_message.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
                         sended_message.set_flood_wait_time(e.value)
                         await change_account_db('send')
@@ -100,15 +100,15 @@ async def send_message_to_tg(text_message, app, channels, account_name, schedule
                     sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
             except BadRequest as e:
                 print(str(ch), " SENDING ERROR IS", e.NAME)
-                logging.info(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {e.NAME}")
+                logging.debug(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {e.NAME}")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
             except Forbidden as e:
                 print(str(ch), " SENDING ERROR IS", e.NAME)
-                logging.info(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {e.NAME}")
+                logging.debug(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {e.NAME}")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=1, channel=ch)
             except KeyError as e:
                 print(str(ch), " SENDING ERROR IS", str(e))
-                logging.info(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {str(e)}")
+                logging.debug(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {str(e)}")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=5, channel=ch)
             messages.append(sended_message)
             await insert_message(sended_message)
