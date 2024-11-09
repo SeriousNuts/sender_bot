@@ -56,10 +56,9 @@ class Account(Base):
     owner_tg_id = Column(BigInteger, ForeignKey('users.tg_id'))
     session_string = Column(String)
 
-    def account(self, name, status, owner_tg_id, session_string):
+    def account(self, name, status, session_string):
         self.name = name
         self.status = status
-        self.owner_tg_id = owner_tg_id
         self.session_string = session_string
 
     def last_use_up(self, period):
@@ -69,11 +68,13 @@ class Account(Base):
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
-    tg_id = Column(BigInteger, index=True, unique=True)
+    tg_id = Column(BigInteger, unique=True)
     status = Column(String)
     last_pay_date_pay = Column(DateTime())
     subs_month = Column(Integer)
     channels = relationship("Channel")
+    accounts = relationship("Account")
+    schedules = relationship("Schedule")
 
 
 class Channel(Base):

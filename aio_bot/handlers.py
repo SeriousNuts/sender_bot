@@ -14,6 +14,7 @@ from aio_bot.models.Forms import StartSendingForm, SignUpForm
 from aio_bot.pyro_modules.pyro_scripts import get_channels, send_message_to_tg, join_chats_to_tg, add_account, \
     check_client_code
 from psql_core.utills import *
+from aio_bot.phone_check import *
 
 config_ini = configparser.ConfigParser()
 config_ini.read('config.ini')
@@ -58,7 +59,6 @@ async def pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
 # successful payment
 @dp.message(F.successful_payment)
 async def successful_payment(message: Message):
-    print("SUCCESSFUL PAYMENT:")
     await bot.delete_message(message_id=message.message_id, chat_id=message.chat.id)
     await bot.send_message(message.chat.id,
                            f"Платеж на сумму {message.successful_payment.total_amount // 100} "
@@ -77,7 +77,6 @@ async def get_text(message: Message, state: FSMContext) -> None:
 @dp.message(StartSendingForm.text)
 async def get_interval(message: Message, state: FSMContext) -> str:
     if message.text == "/cancel":
-        print("/cancel")
         await state.clear()
         await message.reply(f"Создание рассылки отменено", reply_markup=buttons.menu_keyboard)
         return ""
@@ -88,9 +87,8 @@ async def get_interval(message: Message, state: FSMContext) -> str:
 
 
 @dp.message(StartSendingForm.interval)
-async def start_sending(message: Message, state: FSMContext) -> None:
+async def start_sending(message: Message, state: FSMContext) -> str:
     if message.text == "/cancel":
-        print("/cancel")
         await state.clear()
         await message.reply(f"Создание рассылки отменено", reply_markup=buttons.menu_keyboard)
         return ""
@@ -160,16 +158,8 @@ async def menu(message: Message) -> None:
 
 @dp.callback_query(DeleteSendingCallbackFactory.filter(F.action == "delete_sending"))
 async def delete_schedule_callback(query: CallbackQuery, callback_data: DeleteSendingCallbackFactory):
-    print("начало удаления")
     await delete_schedule(owner_tg_id=callback_data.owner_id, sending_id=callback_data.sending_id)
-    print("удалено")
     await bot.send_message(callback_data.owner_id, f"Сообщение удалено")
-
-
-async def send_stats_to_user_test(tg_id):
-    if tg_id is None:
-        tg_id = "6655978580"
-    await bot.send_message(tg_id, f"Совершена рассылка ")
 
 
 @dp.message(F.text.lower() == "menu")
@@ -192,9 +182,12 @@ async def add_account_callback(callback: CallbackQuery, state: FSMContext):
 @dp.message(SignUpForm.phone_number)
 async def get_phone(message: Message, state: FSMContext) -> str:
     if message.text == "/cancel":
-        print("/cancel")
         await state.clear()
         await message.reply(f"Добавление аккаунта отменено", reply_markup=buttons.menu_keyboard)
+        return ""
+    if not is_valid_phone_number(phone_number=message.text):
+        await state.clear()
+        await message.reply(f"Введён некорректный номер", reply_markup=buttons.menu_keyboard)
         return ""
     phone_code_hash, app = await add_account(phone_number_tg=message.text)
     await state.update_data(phone_code_hash=phone_code_hash, app=app, phone_number=message.text)
@@ -211,6 +204,7 @@ async def get_code(message: Message, state: FSMContext) -> None:
     result = await check_client_code(code=message.text, app=app, phone_number_tg=phone_number,
                                      phone_hash_tg=phone_code_hash)
     if not result.startswith("error"):
+        await insert_account(tg_id=message.from_user.id, name=hide_phone_number(phone_number), session_string=result)
         await bot.send_message(message.chat.id, "Аккаунт успешно добавлен")
     else:
         await bot.send_message(message.chat.id, "Ошибка при добавление аккаунта")
