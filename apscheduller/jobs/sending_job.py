@@ -8,7 +8,6 @@ from aio_bot.pyro_modules.pyro_scripts import *
 from db_models import engine, Schedule
 from psql_core.utills import get_accounts_by_schedule
 
-logging.basicConfig(level=logging.INFO, filename="py_log.log", filemode="a")
 Session = sessionmaker(bind=engine)
 session = Session()
 
