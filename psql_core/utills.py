@@ -66,7 +66,7 @@ async def get_settings(type_s):
     return setting, account
 
 async def is_user_have_accounts(user_tg_id):
-    return session.query(func.count(Account)).filter(Account.owner_tg_id == user_tg_id).scalar() > 0
+    return session.query(func.count(Account.id)).filter(Account.owner_tg_id == user_tg_id).scalar() > 0
 
 async def change_account_db(type_s):
     accounts = session.query(Account).filter(Account.status == 'on').all()
