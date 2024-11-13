@@ -114,33 +114,3 @@ async def send_message_to_tg(text_message, app, channels, account_name, schedule
             messages.append(sended_message)
             await insert_message(sended_message)
 
-
-async def join_chats_to_tg(ch):
-    joined_channels = []
-    settings = await get_settings("join")
-    app = Client(settings.account)
-    await app.connect()
-    try:
-        await app.join_chat(str(ch).replace("https://t.me/", ""))
-        joined_channels.append(ch)
-        print(ch, " :IS JOINED")
-        await asyncio.sleep(120)
-    except FloodWait as e:
-        if app.is_connected:
-            if e.value < 301:
-                print("sleep time is: ", e.value)
-                await asyncio.sleep(e.value)
-        else:
-            await app.disconnect()
-            return 0
-    except BadRequest as e:
-        print(str(ch), " JOINING ERROR IS", e.NAME)
-        joined_channels.append(str(ch) + " JOINING ERROR IS" + e.NAME + " : " + e.MESSAGE)
-    except Forbidden as e:
-        print(str(ch), " JOINING ERROR IS", e.NAME)
-        joined_channels.append(str(ch) + " JOINING ERROR IS" + e.NAME + " : " + e.MESSAGE)
-    except Flood as e:
-        print(str(ch), " JOINING ERROR IS", e.NAME)
-        joined_channels.append(str(ch) + " JOINING ERROR IS" + e.NAME + " : " + e.MESSAGE)
-    await app.disconnect()
-    return joined_channels
