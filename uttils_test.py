@@ -1,8 +1,10 @@
+from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from psql_core.utills import is_user_have_accounts, insert_account
+from db_models import Schedule
+from psql_core.utills import is_user_have_accounts, insert_account, insert_schedule
 
 
 @pytest.fixture
@@ -89,3 +91,43 @@ async def test_insert_account_no_user(mock_session):
 
     # Проверяем, что commit не был вызван
     mock_session.commit.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_insert_schedule_creates_new_schedule(mock_session):
+    """Тестируем создание нового расписания."""
+    period = 10
+    message_text = "Test message"
+    owner_tg_id = 12345
+
+    with patch('psql_core.utills.session', mock_session):
+        await insert_schedule(period, message_text, owner_tg_id)
+
+    # Проверяем, что новый объект расписания был создан с правильными параметрами
+    mock_session.add.assert_called_once()
+    added_schedule = mock_session.add.call_args[0][0]  # Получаем добавленный объект
+
+    assert isinstance(added_schedule, Schedule)
+    assert added_schedule.period == int(period)
+    assert added_schedule.text == message_text
+    assert added_schedule.owner_tg_id == owner_tg_id
+    assert added_schedule.status == "not sended"
+    assert added_schedule.next_sending <= datetime.now()  # Проверяем, что next_sending установлен правильно
+
+    # Проверяем, что метод commit был вызван на сессии
+    mock_session.commit.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_insert_schedule_invalid_period(mock_session):
+    """Тестируем случай с недопустимым периодом."""
+    period = "invalid"  # Неверный тип данных для периода
+    message_text = "Test message"
+    owner_tg_id = 12345
+
+    with patch('psql_core.utills.session', mock_session):
+        with pytest.raises(ValueError):  # Предполагаем, что функция должна выбрасывать ValueError
+            await insert_schedule(period, message_text, owner_tg_id)
+
+        # Проверяем, что метод commit не был вызван на сессии
+        mock_session.commit.assert_not_called()

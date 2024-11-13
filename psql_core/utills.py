@@ -13,12 +13,16 @@ async def insert_account(tg_id, name, session_string):
     status = "on"
     account = Account()
     account.account(name=name, status=status, session_string=session_string)
-    session.add(account)
     user = session.query(User).filter(
         User.tg_id == tg_id
     ).first()
-    user.accounts.append(account)
-    session.commit()
+    if user is not None:
+        session.add(account)
+        user.accounts.append(account)
+        session.commit()
+        return True
+    else:
+        return False
 
 
 async def insert_schedule(period, message_text, owner_tg_id):
