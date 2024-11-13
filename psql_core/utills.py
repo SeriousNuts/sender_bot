@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from sqlalchemy import func
 from sqlalchemy.orm import sessionmaker
 
 from db_models import Account, engine, Schedule, Setting, User
@@ -64,6 +65,8 @@ async def get_settings(type_s):
     account = session.query(Account).filter(Account.name == setting.account).first()
     return setting, account
 
+async def is_user_have_accounts(user_tg_id):
+    return session.query(func.count(Account)).filter(Account.owner_tg_id == user_tg_id).scalar() > 0
 
 async def change_account_db(type_s):
     accounts = session.query(Account).filter(Account.status == 'on').all()
