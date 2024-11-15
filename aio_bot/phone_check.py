@@ -5,7 +5,7 @@ def is_valid_phone_number(phone_number):
     # Регулярное выражение для проверки номера телефона
     pattern = re.compile(r'^\+?[1-9]\d{1,14}$')
     # Проверка соответствия строки шаблону
-    return bool(pattern.match(phone_number))
+    return bool(pattern.match(phone_number) and (16 > len(phone_number) > 10))
 
 
 def hide_phone_number(phone_number):

@@ -1,11 +1,13 @@
 import asyncio
+import logging
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pytz import utc
 
 from apscheduller.jobs.sending_job import send_messages
 from apscheduller.scheduler_conf import jobstores, executors, job_defaults
-
+logging.basicConfig(level=logging.INFO, filename="py_log.log", filemode="a",
+                    format="%(asctime)s %(levelname)s %(message)s")
 scheduler = AsyncIOScheduler()
 
 scheduler.add_job(send_messages, "interval", seconds=3)

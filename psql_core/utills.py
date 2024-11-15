@@ -1,8 +1,9 @@
 from datetime import datetime
 
+from sqlalchemy import func
 from sqlalchemy.orm import sessionmaker
 
-from db_models import Account, engine, Schedule, Setting, User
+from db_models import Account, engine, Schedule, User
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -12,12 +13,16 @@ async def insert_account(tg_id, name, session_string):
     status = "on"
     account = Account()
     account.account(name=name, status=status, session_string=session_string)
-    session.add(account)
     user = session.query(User).filter(
         User.tg_id == tg_id
     ).first()
-    user.accounts.append(account)
-    session.commit()
+    if user is not None:
+        session.add(account)
+        user.accounts.append(account)
+        session.commit()
+        return True
+    else:
+        return False
 
 
 async def insert_schedule(period, message_text, owner_tg_id):
@@ -50,8 +55,9 @@ async def get_user_schedules(owner_tg_id):
 
 async def delete_schedule(owner_tg_id, sending_id):
     schedules = session.query(Schedule).filter(Schedule.id == sending_id, Schedule.owner_tg_id == owner_tg_id).first()
-    session.delete(schedules)
-    session.commit()
+    if schedules is not None:
+        session.delete(schedules)
+        session.commit()
 
 
 async def insert_message(message):
@@ -59,23 +65,8 @@ async def insert_message(message):
     session.commit()
 
 
-async def get_settings(type_s):
-    setting = session.query(Setting).filter(Setting.type == type_s).first()
-    account = session.query(Account).filter(Account.name == setting.account).first()
-    return setting, account
-
-
-async def change_account_db(type_s):
-    accounts = session.query(Account).filter(Account.status == 'on').all()
-    setting = session.query(Setting).filter(Setting.type == type_s).first()
-    for i, a in enumerate(accounts):
-        if a.name == setting.account:
-            setting.account = accounts[(i + 1) % len(accounts)].name
-            a.last_use_up(30)
-            session.add(a)
-            break
-    session.add(setting)
-    session.commit()
+async def is_user_have_accounts(user_tg_id):
+    return session.query(func.count(Account.id)).filter(Account.owner_tg_id == user_tg_id).scalar() > 0
 
 
 async def get_accounts_by_schedule(schedule):

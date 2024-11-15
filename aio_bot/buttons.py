@@ -19,10 +19,6 @@ menu_s = [
     ],
 ]
 
-
-
-
-
 cancel_keyboard = types.ReplyKeyboardMarkup(
     keyboard=cancel_s,
     resize_keyboard=True,
