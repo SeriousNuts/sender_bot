@@ -13,7 +13,7 @@ from aio_bot.callback_fabrics import get_keyboard_delete_sending, DeleteSendingC
 from aio_bot.models.Forms import StartSendingForm, SignUpForm
 from aio_bot.pyro_modules.pyro_scripts import get_channels, send_message_to_tg, add_account, \
     check_client_code
-from psql_core.utills import *
+from psql_core.psql_utills import *
 from aio_bot.phone_check import *
 
 config_ini = configparser.ConfigParser()

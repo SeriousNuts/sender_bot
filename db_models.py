@@ -26,6 +26,12 @@ class StatusMessage(Enum):
     NOTFOUND = 5
 
 
+class MaxWaitTimeSchedule(Enum):
+    SLOW = 120
+    MIDDLE = 60
+    FAST = 25
+
+
 class Message(Base):
     __tablename__ = 'messages'
     id = Column(Integer, primary_key=True)

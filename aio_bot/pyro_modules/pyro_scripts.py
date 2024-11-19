@@ -10,7 +10,7 @@ from pyrogram import Client
 from pyrogram.errors import FloodWait, BadRequest, Forbidden, SessionPasswordNeeded
 
 from db_models import Message
-from psql_core.utills import insert_message
+from psql_core.psql_utills import insert_message
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -73,6 +73,7 @@ async def get_channels_by_app(app):
 async def send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id):
     messages = []
     sleep_time = 1
+    max_wait_time = 15
     sending_uuid = uuid.uuid4()
     async with app:
         for ch in channels:
@@ -86,7 +87,7 @@ async def send_message_to_tg(text_message, app, channels, account_name, schedule
                 await asyncio.sleep(sleep_time)
             except FloodWait as e:
                 if app.is_connected:
-                    if e.value < 15:
+                    if e.value < max_wait_time:
                         sended_message.set_flood_wait_time(e.value)
                         await asyncio.sleep(e.value)
                         await app.send_message(chat_id=ch, text=text_message)
