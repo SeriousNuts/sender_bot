@@ -1,7 +1,7 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from pyrogram.errors import Forbidden, BadRequest, FloodWait
+from pyrogram.errors import Forbidden, BadRequest, FloodWait, SlowmodeWait
 
 from aio_bot.pyro_modules.pyro_scripts import send_message_to_tg, get_channels_by_app  # Замените на имя вашего модуля
 
@@ -42,6 +42,22 @@ async def test_send_message_flood_wait():
     # Проверка
     assert app.send_message.call_count == 2  # Первый вызов и повторный после ожидания
 
+@pytest.mark.asyncio
+async def test_send_message_slowmode_wait():
+    # Подготовка
+    app = AsyncMock()
+    app.is_connected = True
+    app.send_message = AsyncMock(side_effect=[SlowmodeWait(5), None])
+    channels = ['channel1']
+    text_message = "Hello, World!"
+    account_name = "test_account"
+    schedule_owner_id = "12345"
+
+    # Вызов функции
+    await send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id)
+
+    # Проверка
+    assert app.send_message.call_count == 2  # Первый вызов и повторный после ожидания
 
 @pytest.mark.asyncio
 async def test_send_message_flood_wait_app_is_diconect():

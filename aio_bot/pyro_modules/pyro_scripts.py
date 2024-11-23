@@ -7,7 +7,8 @@ import uuid
 from datetime import datetime
 
 from pyrogram import Client
-from pyrogram.errors import FloodWait, BadRequest, Forbidden, SessionPasswordNeeded
+from pyrogram.errors import FloodWait, BadRequest, Forbidden, SessionPasswordNeeded, SlowmodeWait, Flood, \
+    TakeoutInitDelay
 
 from db_models import Message
 from psql_core.utills import insert_message
@@ -73,6 +74,7 @@ async def get_channels_by_app(app):
 async def send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id):
     messages = []
     sleep_time = 1
+    max_wait_time = 15
     sending_uuid = uuid.uuid4()
     async with app:
         for ch in channels:
@@ -84,9 +86,9 @@ async def send_message_to_tg(text_message, app, channels, account_name, schedule
                 await app.send_message(chat_id=ch, text=text_message)
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=ch)
                 await asyncio.sleep(sleep_time)
-            except FloodWait as e:
+            except (FloodWait, Flood, SlowmodeWait, TakeoutInitDelay) as e:
                 if app.is_connected:
-                    if e.value < 15:
+                    if e.value < max_wait_time:
                         sended_message.set_flood_wait_time(e.value)
                         await asyncio.sleep(e.value)
                         await app.send_message(chat_id=ch, text=text_message)
@@ -99,17 +101,17 @@ async def send_message_to_tg(text_message, app, channels, account_name, schedule
                 else:
                     sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
             except BadRequest as e:
-                print(str(ch), " SENDING ERROR IS", e.NAME)
                 logging.debug(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {e.NAME}")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
             except Forbidden as e:
-                print(str(ch), " SENDING ERROR IS", e.NAME)
                 logging.debug(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {e.NAME}")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=1, channel=ch)
             except KeyError as e:
-                print(str(ch), " SENDING ERROR IS", str(e))
                 logging.debug(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {str(e)}")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=5, channel=ch)
+            except Exception as e:
+                logging.error(f"Неизвестная ошибка при отправке сообщения в канал {str(ch)} с аккаунта {account_name}:"
+                              f" {str(e)}")
             messages.append(sended_message)
             await insert_message(sended_message)
 
