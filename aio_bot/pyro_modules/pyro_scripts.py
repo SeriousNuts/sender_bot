@@ -100,15 +100,12 @@ async def send_message_to_tg(text_message, app, channels, account_name, schedule
                 else:
                     sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
             except BadRequest as e:
-                print(str(ch), " SENDING ERROR IS", e.NAME)
                 logging.debug(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {e.NAME}")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
             except Forbidden as e:
-                print(str(ch), " SENDING ERROR IS", e.NAME)
                 logging.debug(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {e.NAME}")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=1, channel=ch)
             except KeyError as e:
-                print(str(ch), " SENDING ERROR IS", str(e))
                 logging.debug(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {str(e)}")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=5, channel=ch)
             messages.append(sended_message)
