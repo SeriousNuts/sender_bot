@@ -10,7 +10,7 @@ from pyrogram import Client
 from pyrogram.errors import FloodWait, BadRequest, Forbidden, SessionPasswordNeeded
 
 from db_models import Message
-from psql_core.psql_utills import insert_message
+from psql_core.utills import insert_message
 
 config = configparser.ConfigParser()
 config.read('config.ini')

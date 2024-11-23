@@ -5,7 +5,7 @@ import pytest
 
 from db_models import Schedule, Account
 
-from psql_core.psql_utills import is_user_have_accounts, insert_account, insert_schedule, delete_schedule, insert_message, \
+from psql_core.utills import is_user_have_accounts, insert_account, insert_schedule, delete_schedule, insert_message, \
     get_accounts_by_schedule, get_user_schedules
 
 

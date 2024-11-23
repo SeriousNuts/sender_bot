@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from aio_bot.handlers import bot
 from aio_bot.pyro_modules.pyro_scripts import *
 from db_models import engine, Schedule
-from psql_core.psql_utills import get_accounts_by_schedule
+from psql_core.utills import get_accounts_by_schedule
 
 Session = sessionmaker(bind=engine)
 session = Session()
