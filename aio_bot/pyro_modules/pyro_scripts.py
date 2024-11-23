@@ -7,7 +7,8 @@ import uuid
 from datetime import datetime
 
 from pyrogram import Client
-from pyrogram.errors import FloodWait, BadRequest, Forbidden, SessionPasswordNeeded
+from pyrogram.errors import FloodWait, BadRequest, Forbidden, SessionPasswordNeeded, SlowmodeWait, Flood, \
+    TakeoutInitDelay
 
 from db_models import Message
 from psql_core.utills import insert_message
@@ -85,7 +86,7 @@ async def send_message_to_tg(text_message, app, channels, account_name, schedule
                 await app.send_message(chat_id=ch, text=text_message)
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=ch)
                 await asyncio.sleep(sleep_time)
-            except FloodWait as e:
+            except (FloodWait, Flood, SlowmodeWait, TakeoutInitDelay) as e:
                 if app.is_connected:
                     if e.value < max_wait_time:
                         sended_message.set_flood_wait_time(e.value)
