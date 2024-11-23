@@ -109,6 +109,9 @@ async def send_message_to_tg(text_message, app, channels, account_name, schedule
             except KeyError as e:
                 logging.debug(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {str(e)}")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=5, channel=ch)
+            except Exception as e:
+                logging.error(f"Неизвестная ошибка при отправке сообщения в канал {str(ch)} с аккаунта {account_name}:"
+                              f" {str(e)}")
             messages.append(sended_message)
             await insert_message(sended_message)
 
