@@ -28,7 +28,7 @@ async def add_account(phone_number_tg):
     try:
         return await app.send_code(phone_number=phone_number_tg), app
     except BadRequest as e:
-        print(f"add client error is: {e.NAME} {e.MESSAGE}")
+        logging.debug(msg=f"add client error is: {e.NAME} {e.MESSAGE}")
         return e.NAME
 
 
@@ -42,8 +42,10 @@ async def check_client_code(code, app, phone_number_tg, phone_hash_tg):
             result = await app.export_session_string()
     except BadRequest as e:
         result = f"error {e.NAME} : {e.MESSAGE}"
+        logging.debug(msg=f"check client code error is: {e.NAME} {e.MESSAGE}")
     except SessionPasswordNeeded as e:
         result = f"error {e.NAME} : {e.MESSAGE}"
+        logging.debug(msg=f"check client code error is: {e.NAME} {e.MESSAGE}")
     await app.disconnect()
     return result
 
@@ -96,19 +98,19 @@ async def send_message_to_tg(text_message, app, channels, account_name, schedule
                         sended_message.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=ch)
                         await asyncio.sleep(sleep_time)
                     else:
-                        logging.debug(f"{datetime.now()} : {str(ch)} FLOOD WAIT {e.value} NOT SENDED")
+                        logging.debug(f"{str(ch)} FLOOD WAIT {e.value} NOT SENDED")
                         sended_message.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
                         sended_message.set_flood_wait_time(e.value)
                 else:
                     sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
             except BadRequest as e:
-                logging.debug(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {e.NAME}")
+                logging.debug(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
             except Forbidden as e:
-                logging.debug(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {e.NAME}")
+                logging.debug(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=1, channel=ch)
             except KeyError as e:
-                logging.debug(f"{datetime.now()} : {str(ch)}  SENDING ERROR IS {str(e)}")
+                logging.debug(f"{str(ch)}  SENDING ERROR IS {str(e)}")
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=5, channel=ch)
             except Exception as e:
                 logging.error(f"Неизвестная ошибка при отправке сообщения в канал {str(ch)} с аккаунта {account_name}:"
