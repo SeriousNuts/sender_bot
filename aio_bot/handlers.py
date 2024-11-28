@@ -128,16 +128,6 @@ async def send_messages(message: Message) -> None:
     await message.answer(f"Все сообщения отправлены")
 
 
-@dp.message(Command("join_chats"))
-async def send_messages(message: Message) -> None:
-    channels = get_channels()
-    msg = await message.answer(f"Начинаем присоеденеие")
-    for ch in channels:
-        joined_chat = await join_chats_to_tg(ch)
-        msg = await msg.edit_text(f"{msg.text}\n {joined_chat}", disable_web_page_preview=True)
-    await message.answer(f"Присоеденение к чатам закончено")
-
-
 @dp.message(Command("cancel"))
 async def test_handler(state: FSMContext) -> None:
     await state.clear()

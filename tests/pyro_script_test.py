@@ -15,9 +15,9 @@ async def test_send_message_success():
     text_message = "Hello, World!"
     account_name = "test_account"
     schedule_owner_id = "12345"
-
+    schedule_uuid = "test-1234-test-1234"
     # Вызов функции
-    await send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id)
+    await send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id, schedule_uuid)
 
     # Проверка
     assert app.send_message.call_count == len(channels)
@@ -35,9 +35,10 @@ async def test_send_message_flood_wait():
     text_message = "Hello, World!"
     account_name = "test_account"
     schedule_owner_id = "12345"
+    schedule_uuid = "test-1234-test-1234"
 
     # Вызов функции
-    await send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id)
+    await send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id, schedule_uuid)
 
     # Проверка
     assert app.send_message.call_count == 2  # Первый вызов и повторный после ожидания
@@ -52,9 +53,10 @@ async def test_send_message_slowmode_wait():
     text_message = "Hello, World!"
     account_name = "test_account"
     schedule_owner_id = "12345"
+    schedule_uuid = "test-1234-test-1234"
 
     # Вызов функции
-    await send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id)
+    await send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id, schedule_uuid)
 
     # Проверка
     assert app.send_message.call_count == 2  # Первый вызов и повторный после ожидания
@@ -69,9 +71,9 @@ async def test_send_message_flood_wait_app_is_diconect():
     text_message = "Hello, World!"
     account_name = "test_account"
     schedule_owner_id = "12345"
-
+    schedule_uuid = "test-1234-test-1234"
     # Вызов функции
-    await send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id)
+    await send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id, schedule_uuid)
 
     # Проверка
     assert app.send_message.call_count == 1  # Первый вызов и повторный после ожидания
@@ -86,9 +88,9 @@ async def test_send_message_bad_request():
     text_message = "Hello, World!"
     account_name = "test_account"
     schedule_owner_id = "12345"
-
+    schedule_uuid = "test-1234-test-1234"
     # Вызов функции
-    await send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id)
+    await send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id, schedule_uuid)
 
     # Проверка
     assert app.send_message.call_count == 1  # Должен быть только один вызов
@@ -103,9 +105,9 @@ async def test_send_message_forbidden():
     text_message = "Hello, World!"
     account_name = "test_account"
     schedule_owner_id = "12345"
-
+    schedule_uuid = "test-1234-test-1234"
     # Вызов функции
-    await send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id)
+    await send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id, schedule_uuid)
 
     # Проверка
     assert app.send_message.call_count == 1  # Должен быть только один вызов
@@ -120,9 +122,9 @@ async def test_send_message_key_error():
     text_message = "Hello, World!"
     account_name = "test_account"
     schedule_owner_id = "12345"
-
+    schedule_uuid = "test-1234-test-1234"
     # Вызов функции
-    await send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id)
+    await send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id, schedule_uuid)
 
     # Проверка
     assert app.send_message.call_count == 1  # Должен быть только один вызов
