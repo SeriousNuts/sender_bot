@@ -71,7 +71,7 @@ async def get_channels_by_app(app):
                 channels.append(str(dialog.chat.username))
     return channels
 
-async def send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id):
+async def send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id, schedule_uuid):
     messages = []
     sleep_time = 1
     max_wait_time = 15
@@ -82,6 +82,7 @@ async def send_message_to_tg(text_message, app, channels, account_name, schedule
             sended_message.sending_uuid = sending_uuid
             sended_message.account_name = account_name
             sended_message.schedule_owner_id = schedule_owner_id
+            sended_message.schedule_uuid = schedule_uuid
             try:
                 await app.send_message(chat_id=ch, text=text_message)
                 sended_message.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=ch)
