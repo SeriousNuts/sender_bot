@@ -32,6 +32,10 @@ class Stats:
         self.not_sended_message_count = row[4]
         self.not_found_message_count = row[5]
 
+    def get_all_message_count(self):
+        return self.sended_message_count + self.forbidden_message_count + self.bad_request_message_count +\
+               self.flood_wait_message_count + self.not_found_message_count + self.not_sended_message_count
+
 
 async def get_full_stats_by_schedule_owner_id(schedule_owner_id):
     result = session.query(
