@@ -9,7 +9,8 @@ from aiogram.utils.markdown import hbold
 
 from tg_bot import buttons
 from tg_bot.buttons import *
-from tg_bot.callback_fabrics import get_keyboard_delete_sending, DeleteSendingCallbackFactory, get_menu_inline_keyboard
+from tg_bot.callback_fabrics import get_keyboard_delete_sending, DeleteSendingCallbackFactory, get_menu_inline_keyboard, \
+    GetMyAccountsCallbackFactory
 from tg_bot.models.Forms import StartSendingForm, SignUpForm
 from MTProto_bot.pyro_scripts import get_channels, send_message_to_tg, add_account, \
     check_client_code
@@ -157,7 +158,18 @@ async def get_my_account(message: Message) -> None:
     # получение информации об аккаунте
     await bot.send_message(message.from_user.id, "ID аккаунта:\n"
                                                  f"Баланс:\n"
-                                                 f"Аккаунтов для рассылки:", reply_markup=get_menu_inline_keyboard())
+                                                 f"Аккаунтов для рассылки:",
+                           reply_markup=get_menu_inline_keyboard(tg_owner_id=message.from_user.id))
+
+
+@dp.callback_query(F.data == "my_accounts")
+async def my_account_callback(callback: CallbackQuery, callback_data: GetMyAccountsCallbackFactory):
+    # получение списка аккаунтов
+    accounts = await get_accounts_by_tg_id(callback_data.owner_id)
+    await callback.message.delete()
+    for a in accounts:
+        await bot.send_message(callback_data.owner_id, f"<b>Имя аккаунта:</b> {a.name}\n"
+                                                       f"<b>Статус:</b> {a.status}")
 
 
 @dp.callback_query(F.data == "add_account")
