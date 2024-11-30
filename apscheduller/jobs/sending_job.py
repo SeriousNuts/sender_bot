@@ -71,6 +71,7 @@ async def send_schedule_stats_to_user(schedule_uuid, schedule_owner_id, schedule
     if len(message) >= 4090:
         message = message[1:4000]
     try:
-        await bot.send_message(schedule_owner_id, message)
+        await bot.send_message(schedule_owner_id, message,
+                               parse_mode='HTML')
     except Exception as e:
         logging.error(f"send stats to user error: {e} \n error in {e.__traceback__}")

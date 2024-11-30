@@ -4,6 +4,7 @@ import logging
 import sys
 
 from aiogram import Bot
+from aiogram.client.default import DefaultBotProperties
 
 # from aio_bot.config import TOKEN, TOKEN_TEST
 from tg_bot.handlers import dp
@@ -14,7 +15,7 @@ TOKEN = config['secrets']['bot_token']
 
 async def main() -> None:
     # Initialize Bot instance with a default parse mode which will be passed to all API calls
-    bot_m = Bot(TOKEN)
+    bot_m = Bot(TOKEN, default=DefaultBotProperties(parse_mode='HTML'))
     # And the run events dispatching
     await dp.start_polling(bot_m, skip_updates=False)
 
