@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from sqlalchemy import func
 from sqlalchemy.orm import sessionmaker
 
@@ -33,7 +35,7 @@ class Stats:
         self.not_found_message_count = row[5]
 
     def get_all_message_count(self):
-        return self.sended_message_count + self.forbidden_message_count + self.bad_request_message_count +\
+        return self.sended_message_count + self.forbidden_message_count + self.bad_request_message_count + \
                self.flood_wait_message_count + self.not_found_message_count + self.not_sended_message_count
 
 
@@ -50,6 +52,7 @@ async def get_full_stats_by_schedule_owner_id(schedule_owner_id):
     stats.get_stats_from_row(row=result)
     return stats
 
+
 async def get_stats_by_schedule_uuid(schedule_uuid):
     result = session.query(
         func.count().filter(Message.status == 0).label('sended_message_count'),
@@ -59,6 +62,25 @@ async def get_stats_by_schedule_uuid(schedule_uuid):
         func.count().filter(Message.status == 4).label('not_sended_message_count'),
         func.count().filter(Message.status == 5).label('not_found_message_count')
     ).filter(Message.schedule_uuid == schedule_uuid).one()
+    stats = Stats()
+    stats.get_stats_from_row(row=result)
+    return stats
+
+
+async def get_stats_by_interval(tg_owner_id, days_before):
+    days = datetime.now() - timedelta(days=days_before)
+
+    result = session.query(
+        func.count().filter(Message.status == 0).label('sended_message_count'),
+        func.count().filter(Message.status == 1).label('forbidden_message_count'),
+        func.count().filter(Message.status == 2).label('bad_request_message_count'),
+        func.count().filter(Message.status == 3).label('flood_wait_message_count'),
+        func.count().filter(Message.status == 4).label('not_sended_message_count'),
+        func.count().filter(Message.status == 5).label('not_found_message_count')
+    ).filter(
+        Message.schedule_owner_id == tg_owner_id,
+        Message.created_at >= days  # количество дней за которые возьмутся сообщения
+    ).one()
     stats = Stats()
     stats.get_stats_from_row(row=result)
     return stats

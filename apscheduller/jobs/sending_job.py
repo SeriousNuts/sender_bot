@@ -3,11 +3,10 @@ from datetime import timedelta
 from sqlalchemy import func
 from sqlalchemy.orm import sessionmaker
 
-from tg_bot.handlers import bot
 from MTProto_bot.pyro_scripts import *
 from db_models import engine, Schedule
-from psql_core.get_stats_from_db import get_stats_by_schedule_uuid
 from psql_core.utills import get_accounts_by_tg_id
+from utills.stats_format import send_schedule_stats_to_user
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -59,19 +58,3 @@ async def send_messages():
     except Exception as e:
         logging.error(f"Error committing session in send message: {e}")
         session.rollback()
-
-
-async def send_schedule_stats_to_user(schedule_uuid, schedule_owner_id, schedule_text):
-    stats = await get_stats_by_schedule_uuid(schedule_uuid=schedule_uuid)
-    message = (f"<b>Совершена рассылка</b> \n" +
-               f"<b>Текст: {schedule_text[1:50]}</b> \n" +
-               f"<b>Успешно:</b> {stats.sended_message_count}{stats.get_all_message_count()} \n" +
-               f"<b>Временный бан:</b> {stats.forbidden_message_count}\n" +
-               f"<b>Не прошло флуд фильтр:</b> {stats.flood_wait_message_count}")
-    if len(message) >= 4090:
-        message = message[1:4000]
-    try:
-        await bot.send_message(schedule_owner_id, message,
-                               parse_mode='HTML')
-    except Exception as e:
-        logging.error(f"send stats to user error: {e} \n error in {e.__traceback__}")
