@@ -3,11 +3,10 @@ from datetime import timedelta
 from sqlalchemy import func
 from sqlalchemy.orm import sessionmaker
 
-from aio_bot.handlers import bot
-from aio_bot.pyro_modules.pyro_scripts import *
+from MTProto_bot.pyro_scripts import *
 from db_models import engine, Schedule
-from psql_core.get_stats_from_db import get_stats_by_schedule_uuid
-from psql_core.utills import get_accounts_by_schedule
+from psql_core.utills import get_accounts_by_tg_id
+from utills.stats_format import send_schedule_stats_to_user
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -34,7 +33,7 @@ async def send_messages():
     tasks_queue = []
     schedule_uuid_list = []
     for s in schedules:
-        accounts = await get_accounts_by_schedule(s)
+        accounts = await get_accounts_by_tg_id(tg_id=s.owner_tg_id)
         schedule_uuid = str(uuid.uuid4())
         schedule_uuid_list.append(schedule_uuid)
         for acc in accounts:
@@ -50,7 +49,8 @@ async def send_messages():
             s.last_sening = datetime.now()
             s.next_sending = datetime.now() + timedelta(minutes=s.period)
             s.status = "work"
-            await send_schedule_stats_to_user(schedule_uuid=schedule_uuid_list[index], schedule_owner_id=s.owner_tg_id)
+            await send_schedule_stats_to_user(schedule_uuid=schedule_uuid_list[index], schedule_owner_id=s.owner_tg_id,
+                                              schedule_text=s.text)
         except Exception as e:
             logging.error(f"Error updating schedule {s.id}: {e}")
     try:
@@ -58,16 +58,3 @@ async def send_messages():
     except Exception as e:
         logging.error(f"Error committing session in send message: {e}")
         session.rollback()
-
-async def send_schedule_stats_to_user(schedule_uuid, schedule_owner_id):
-    stats = await get_stats_by_schedule_uuid(schedule_uuid=schedule_uuid)
-    message = (f"Совершена рассылка \n" +
-               f"Успешно отправлено в {stats.sended_message_count} чатов из {stats.get_all_message_count()} \n" +
-               f"В {stats.forbidden_message_count} чатах получен бан \n" +
-               f"В {stats.flood_wait_message_count} чатах сообщение не отправлено из-за ограничений флуд фильтра")
-    if len(message) >= 4090:
-        message = message[1:4000]
-    try:
-        await bot.send_message(schedule_owner_id, message)
-    except Exception as e:
-        logging.error(f"send stats to user error: {e} \n error in {e.__traceback__}")

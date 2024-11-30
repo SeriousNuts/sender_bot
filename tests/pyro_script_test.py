@@ -1,9 +1,9 @@
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 import pytest
 from pyrogram.errors import Forbidden, BadRequest, FloodWait, SlowmodeWait
 
-from aio_bot.pyro_modules.pyro_scripts import send_message_to_tg, get_channels_by_app  # Замените на имя вашего модуля
+from MTProto_bot.pyro_scripts import send_message_to_tg  # Замените на имя вашего модуля
 
 
 @pytest.mark.asyncio

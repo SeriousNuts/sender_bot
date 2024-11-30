@@ -7,14 +7,15 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 from aiogram.utils.markdown import hbold
 
-from aio_bot import buttons
-from aio_bot.buttons import *
-from aio_bot.callback_fabrics import get_keyboard_delete_sending, DeleteSendingCallbackFactory, get_menu_inline_keyboard
-from aio_bot.models.Forms import StartSendingForm, SignUpForm
-from aio_bot.pyro_modules.pyro_scripts import get_channels, send_message_to_tg, add_account, \
+from MTProto_bot.pyro_scripts import add_account, \
     check_client_code
 from psql_core.utills import *
-from aio_bot.phone_check import *
+from tg_bot import buttons
+from tg_bot.buttons import *
+from tg_bot.callback_fabrics import get_keyboard_delete_sending, DeleteSendingCallbackFactory, get_menu_inline_keyboard, \
+    GetMyAccountsCallbackFactory
+from tg_bot.models.Forms import StartSendingForm, SignUpForm
+from utills.phone_check import *
 
 config_ini = configparser.ConfigParser()
 config_ini.read('config.ini')
@@ -111,28 +112,6 @@ async def command_start_handler(message: Message) -> None:
     await message.reply(f"Привет, {hbold(message.from_user.full_name)}!", reply_markup=buttons.menu_keyboard)
 
 
-@dp.message(Command("channel_list"))
-async def channels_list(message: Message) -> None:
-    channels = get_channels()
-    for ch in channels:
-        await message.answer(f"Список каналов {ch}")
-
-
-@dp.message(Command("send_messages"))
-async def send_messages(message: Message) -> None:
-    channels = get_channels()
-    msg = await message.answer(f"Начинаем отправку")
-    for ch in channels:
-        sended_message = await send_message_to_tg(ch, "test")
-        msg = await msg.edit_text(f"{msg.text}\n {sended_message}", disable_web_page_preview=True)
-    await message.answer(f"Все сообщения отправлены")
-
-
-@dp.message(Command("cancel"))
-async def test_handler(state: FSMContext) -> None:
-    await state.clear()
-
-
 @dp.message(F.text.lower() == "мои рассылки")
 async def menu(message: Message) -> None:
     schedules = await get_user_schedules(str(message.from_user.id))
@@ -157,7 +136,23 @@ async def get_my_account(message: Message) -> None:
     # получение информации об аккаунте
     await bot.send_message(message.from_user.id, "ID аккаунта:\n"
                                                  f"Баланс:\n"
-                                                 f"Аккаунтов для рассылки:", reply_markup=get_menu_inline_keyboard())
+                                                 f"Аккаунтов для рассылки:",
+                           reply_markup=get_menu_inline_keyboard(tg_owner_id=str(message.from_user.id)))
+
+
+@dp.callback_query(GetMyAccountsCallbackFactory.filter(F.action == "my_accounts"))
+async def my_account_callback(query: CallbackQuery, callback_data: GetMyAccountsCallbackFactory):
+    # получение списка аккаунтов
+    accounts = await get_accounts_by_tg_id(callback_data.owner_id)
+    # удаление сообщения с менюшкой
+    await query.message.delete()
+    if len(accounts) == 0:
+        await bot.send_message(callback_data.owner_id, f"У вас нет аккаунтов",
+                               parse_mode='HTML')
+    for a in accounts:
+        await bot.send_message(callback_data.owner_id, f"<b>Имя аккаунта:</b> {a.name}\n"
+                                                       f"<b>Статус:</b> {a.status}",
+                               parse_mode='HTML')
 
 
 @dp.callback_query(F.data == "add_account")

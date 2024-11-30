@@ -1,4 +1,4 @@
-from aio_bot.phone_check import is_valid_phone_number, hide_phone_number  # Замените на имя вашего модуля
+from utills.phone_check import is_valid_phone_number, hide_phone_number  # Замените на имя вашего модуля
 
 
 def test_is_valid_phone_number():

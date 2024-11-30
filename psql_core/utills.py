@@ -69,5 +69,5 @@ async def is_user_have_accounts(user_tg_id):
     return session.query(func.count(Account.id)).filter(Account.owner_tg_id == user_tg_id).scalar() > 0
 
 
-async def get_accounts_by_schedule(schedule):
-    return session.query(Account).filter(Account.owner_tg_id == schedule.owner_tg_id).all()
+async def get_accounts_by_tg_id(tg_id):
+    return session.query(Account).filter(Account.owner_tg_id == tg_id).all()
