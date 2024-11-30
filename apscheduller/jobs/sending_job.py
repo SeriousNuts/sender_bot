@@ -50,7 +50,8 @@ async def send_messages():
             s.last_sening = datetime.now()
             s.next_sending = datetime.now() + timedelta(minutes=s.period)
             s.status = "work"
-            await send_schedule_stats_to_user(schedule_uuid=schedule_uuid_list[index], schedule_owner_id=s.owner_tg_id)
+            await send_schedule_stats_to_user(schedule_uuid=schedule_uuid_list[index], schedule_owner_id=s.owner_tg_id,
+                                              schedule_text=s.text)
         except Exception as e:
             logging.error(f"Error updating schedule {s.id}: {e}")
     try:
@@ -59,12 +60,14 @@ async def send_messages():
         logging.error(f"Error committing session in send message: {e}")
         session.rollback()
 
-async def send_schedule_stats_to_user(schedule_uuid, schedule_owner_id):
+
+async def send_schedule_stats_to_user(schedule_uuid, schedule_owner_id, schedule_text):
     stats = await get_stats_by_schedule_uuid(schedule_uuid=schedule_uuid)
-    message = (f"Совершена рассылка \n" +
-               f"Успешно отправлено в {stats.sended_message_count} чатов из {stats.get_all_message_count()} \n" +
-               f"В {stats.forbidden_message_count} чатах получен бан \n" +
-               f"В {stats.flood_wait_message_count} чатах сообщение не отправлено из-за ограничений флуд фильтра")
+    message = (f"<b>Совершена рассылка</b> \n" +
+               f"<b>Текст: {schedule_text[1:50]}</b> \n" +
+               f"<b>Успешно:</b> {stats.sended_message_count}{stats.get_all_message_count()} \n" +
+               f"<b>Временный бан:</b> {stats.forbidden_message_count}\n" +
+               f"<b>Не прошло флуд фильтр:</b> {stats.flood_wait_message_count}")
     if len(message) >= 4090:
         message = message[1:4000]
     try:
