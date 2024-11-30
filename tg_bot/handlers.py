@@ -7,14 +7,14 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 from aiogram.utils.markdown import hbold
 
-from aio_bot import buttons
-from aio_bot.buttons import *
-from aio_bot.callback_fabrics import get_keyboard_delete_sending, DeleteSendingCallbackFactory, get_menu_inline_keyboard
-from aio_bot.models.Forms import StartSendingForm, SignUpForm
-from aio_bot.pyro_modules.pyro_scripts import get_channels, send_message_to_tg, add_account, \
+from tg_bot import buttons
+from tg_bot.buttons import *
+from tg_bot.callback_fabrics import get_keyboard_delete_sending, DeleteSendingCallbackFactory, get_menu_inline_keyboard
+from tg_bot.models.Forms import StartSendingForm, SignUpForm
+from MTProto_bot.pyro_scripts import get_channels, send_message_to_tg, add_account, \
     check_client_code
 from psql_core.utills import *
-from aio_bot.phone_check import *
+from utills.phone_check import *
 
 config_ini = configparser.ConfigParser()
 config_ini.read('config.ini')

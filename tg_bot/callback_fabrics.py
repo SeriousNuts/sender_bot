@@ -15,7 +15,11 @@ def get_menu_inline_keyboard():
     builder = InlineKeyboardBuilder()
     builder.button(
         text="Добавить аккаунт",
-        callback_data="add_account"
+        callback_data="add_account",
+    )
+    builder.button(
+        text="Мои аккаунты",
+        callback_data="my_account",
     )
 
     return builder.as_markup()

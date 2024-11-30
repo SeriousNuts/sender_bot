@@ -6,7 +6,7 @@ import sys
 from aiogram import Bot
 
 # from aio_bot.config import TOKEN, TOKEN_TEST
-from aio_bot.handlers import dp
+from tg_bot.handlers import dp
 
 config = configparser.ConfigParser()
 config.read('config.ini')

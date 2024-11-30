@@ -6,7 +6,7 @@ import pytest
 from db_models import Schedule, Account
 
 from psql_core.utills import is_user_have_accounts, insert_account, insert_schedule, delete_schedule, insert_message, \
-    get_accounts_by_schedule, get_user_schedules
+    get_accounts_by_tg_id, get_user_schedules
 
 
 @pytest.fixture
@@ -210,7 +210,7 @@ async def test_insert_message_failure(mock_session):
 
 
 @pytest.mark.asyncio
-async def test_get_accounts_by_schedule_success(mock_session):
+async def test_get_accounts_by_tg_owner_id_success(mock_session):
     """Тестируем успешное получение аккаунтов по расписанию."""
 
     # Создаем имитацию объекта расписания
@@ -227,7 +227,7 @@ async def test_get_accounts_by_schedule_success(mock_session):
     mock_session.query.return_value.filter.return_value.all.return_value = [account1, account2]
 
     with patch('psql_core.utills.session', mock_session):  # Заменяем на psql_core.utils
-        accounts = await get_accounts_by_schedule(schedule)
+        accounts = await get_accounts_by_tg_id(schedule.owner_tg_id)
 
     # Проверяем, что возвращаемые аккаунты соответствуют ожиданиям
     assert len(accounts) == 2
@@ -246,7 +246,7 @@ async def test_get_accounts_by_schedule_no_accounts(mock_session):
     mock_session.query.return_value.filter.return_value.all.return_value = []
 
     with patch('psql_core.utills.session', mock_session):  # Заменяем на psql_core.utils
-        accounts = await get_accounts_by_schedule(schedule)
+        accounts = await get_accounts_by_tg_id(schedule.owner_tg_id)
 
     # Проверяем, что возвращаемый список пустой
     assert len(accounts) == 0

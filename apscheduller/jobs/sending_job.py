@@ -3,8 +3,8 @@ from datetime import timedelta
 from sqlalchemy import func
 from sqlalchemy.orm import sessionmaker
 
-from aio_bot.handlers import bot
-from aio_bot.pyro_modules.pyro_scripts import *
+from tg_bot.handlers import bot
+from MTProto_bot.pyro_scripts import *
 from db_models import engine, Schedule
 from psql_core.get_stats_from_db import get_stats_by_schedule_uuid
 from psql_core.utills import get_accounts_by_tg_id
