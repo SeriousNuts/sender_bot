@@ -11,7 +11,7 @@ async def send_schedule_stats_to_user(schedule_uuid, schedule_owner_id, schedule
                f"<b>Текст: {schedule_text[0:50]}</b> \n" +
                f"<b>Успешно:</b> {stats.sended_message_count}/{stats.get_all_message_count()} \n" +
                f"<b>Временный бан:</b> {stats.forbidden_message_count}\n" +
-               f"<b>Не прошло флуд фильтр:</b> {stats.flood_wait_message_count}"
+               f"<b>Не прошло флуд фильтр:</b> {stats.flood_wait_message_count}\n"
                f"<b>UUID отправки:</b> {schedule_uuid}")
     if len(message) >= 4090:
         message = message[0:4000]
