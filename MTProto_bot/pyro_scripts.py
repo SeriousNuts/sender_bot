@@ -18,6 +18,7 @@ config.read('config.ini')
 api_id = int(config['secrets']['api_id'])
 api_hash = config['secrets']['api_hash']
 
+
 # отправляем запрос на регистрацию
 async def add_account(phone_number_tg):
     name = str(uuid.uuid4())
@@ -54,12 +55,12 @@ def get_channels():
     channels = []
     path = os.getcwd()
     channels_path = os.path.join(path, "sender_bot", "aio_bot", "channels.csv")
-    #channels_path = os.path.join(path, "aio_bot", "channels_new.csv")
     with open(channels_path, encoding='UTF-8') as r_file:
         file_reader = csv.DictReader(r_file, delimiter=";")
         for row in file_reader:
             channels.append(row['ссылка на канал'])
     return channels
+
 
 async def get_app_by_session_string(session_string, app_name):
     return Client(name=app_name, session_string=session_string, in_memory=True)
@@ -73,48 +74,71 @@ async def get_channels_by_app(app):
                 channels.append(str(dialog.chat.username))
     return channels
 
-async def send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id, schedule_uuid):
+
+async def send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id, schedule_uuid,
+                             sleep_time=1, max_wait_time=15):
     messages = []
-    sleep_time = 1
-    max_wait_time = 15
     sending_uuid = uuid.uuid4()
+
     async with app:
-        for ch in channels:
-            sended_message = Message()
-            sended_message.sending_uuid = sending_uuid
-            sended_message.account_name = account_name
-            sended_message.schedule_owner_id = schedule_owner_id
-            sended_message.schedule_uuid = schedule_uuid
-            try:
-                await app.send_message(chat_id=ch, text=text_message)
-                sended_message.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=ch)
-                await asyncio.sleep(sleep_time)
-            except (FloodWait, Flood, SlowmodeWait, TakeoutInitDelay) as e:
-                if app.is_connected:
-                    if e.value < max_wait_time:
-                        sended_message.set_flood_wait_time(e.value)
-                        await asyncio.sleep(e.value)
-                        await app.send_message(chat_id=ch, text=text_message)
-                        sended_message.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=ch)
-                        await asyncio.sleep(sleep_time)
-                    else:
-                        logging.debug(f"{str(ch)} FLOOD WAIT {e.value} NOT SENDED")
-                        sended_message.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=ch)
-                        sended_message.set_flood_wait_time(e.value)
-                else:
-                    sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
-            except BadRequest as e:
-                logging.debug(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
-                sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=ch)
-            except Forbidden as e:
-                logging.debug(f"{str(ch)}  SENDING ERROR IS {e.NAME}")
-                sended_message.set_message(text=text_message, sending_date=datetime.now(), status=1, channel=ch)
-            except KeyError as e:
-                logging.debug(f"{str(ch)}  SENDING ERROR IS {str(e)}")
-                sended_message.set_message(text=text_message, sending_date=datetime.now(), status=5, channel=ch)
-            except Exception as e:
-                logging.error(f"Неизвестная ошибка при отправке сообщения в канал {str(ch)} с аккаунта {account_name}:"
-                              f" {str(e)}")
+        tasks = [send_message_to_channel(app=app, chat_id=ch, text_message=text_message, sending_uuid=sending_uuid,
+                                         account_name=account_name,
+                                         schedule_owner_id=schedule_owner_id, schedule_uuid=schedule_uuid,
+                                         max_wait_time=max_wait_time, sleep_time=sleep_time) for ch in channels]
+        results = await asyncio.gather(*tasks)
+
+        for sended_message in results:
             messages.append(sended_message)
             await insert_message(sended_message)
 
+
+async def send_message_to_channel(app, chat_id, text_message, sending_uuid,
+                                  account_name, schedule_owner_id, schedule_uuid, max_wait_time, sleep_time):
+    sended_message = Message()
+    sended_message.sending_uuid = sending_uuid
+    sended_message.account_name = account_name
+    sended_message.schedule_owner_id = schedule_owner_id
+    sended_message.schedule_uuid = schedule_uuid
+
+    try:
+        await app.send_message(chat_id=chat_id, text=text_message)
+        sended_message.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=chat_id)
+        await asyncio.sleep(sleep_time)  # Ожидание между отправками
+    except (FloodWait, Flood, SlowmodeWait, TakeoutInitDelay) as e:
+        if e.value <= max_wait_time:
+            sended_message = await handle_flood_wait(exception=e, app=app, chat_id=chat_id, text_message=text_message,
+                                                     sended_message=sended_message, max_wait_time=max_wait_time,
+                                                     sleep_time=sleep_time)
+        else:
+            # ожидание слишком велико, помечаем сообщение и не отправляем его
+            sended_message.flood_wait_time = e.value
+            sended_message.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=chat_id)
+    except BadRequest as e:
+        logging.debug(f"{chat_id} SENDING ERROR IS {e.NAME} from account:{account_name}")
+        sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=chat_id)
+    except Forbidden as e:
+        logging.debug(f"{chat_id} SENDING ERROR IS {e.NAME} from account:{account_name}")
+        sended_message.set_message(text=text_message, sending_date=datetime.now(), status=1, channel=chat_id)
+    except KeyError as e:
+        logging.debug(f"{chat_id} SENDING ERROR IS {str(e)} from account:{account_name}")
+        sended_message.set_message(text=text_message, sending_date=datetime.now(), status=5, channel=chat_id)
+    except Exception as e:
+        logging.error(f"{chat_id} Unknown error while sending on channel: from account: {account_name}: {e}")
+
+    return sended_message
+
+
+async def handle_flood_wait(exception, app, chat_id, text_message, sended_message, max_wait_time, sleep_time):
+    wait_time = min(exception.value or sleep_time, max_wait_time)  # Ограничиваем максимальное время ожидания
+    logging.debug(f"{chat_id} FLOOD WAIT {wait_time} seconds")
+    sended_message.set_flood_wait_time(wait_time)
+    await asyncio.sleep(wait_time)
+    try:
+        await app.send_message(chat_id=chat_id, text=text_message)
+        sended_message.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=chat_id)
+        await asyncio.sleep(sleep_time)  # Обеспечиваем ожидание между отправками
+    except (FloodWait, Flood, SlowmodeWait, TakeoutInitDelay) as retry_exception:
+        sended_message.set_flood_wait_time(retry_exception.value + wait_time)
+        sended_message.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=chat_id)
+        logging.debug(f"{chat_id} still in flood wait: {retry_exception.value}")
+    return sended_message
