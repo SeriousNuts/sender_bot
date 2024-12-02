@@ -142,3 +142,6 @@ async def handle_flood_wait(exception, app, chat_id, text_message, sended_messag
         sended_message.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=chat_id)
         logging.debug(f"{chat_id} still in flood wait: {retry_exception.value}")
     return sended_message
+
+async def handle_too_long_flood_wait(app, chat_id, text_message):
+    pass

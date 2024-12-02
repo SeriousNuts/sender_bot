@@ -27,5 +27,5 @@ async def send_period_stats_to_user(tg_onwer_id, days_before):
     message = (f"Статистика за период с {datetime.now().day - timedelta(days_before).days} по {datetime.now().day}\n" +
                f"<b>Успешно:</b> {stats.sended_message_count}{stats.get_all_message_count()} \n" +
                f"<b>Временный бан:</b> {stats.forbidden_message_count}\n" +
-               f"<b>Не прошло флуд фильтр:</b> {stats.flood_wait_message_count}")
+               f"<b>Не прошло флуд фильтр:</b> <code>{stats.flood_wait_message_count}</code>")
     return message

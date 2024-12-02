@@ -63,6 +63,7 @@ class Account(Base):
     last_use = Column(DateTime())
     owner_tg_id = Column(BigInteger, ForeignKey('users.tg_id'))
     session_string = Column(String)
+    delayd_messages = relationship("DelayedMessage")
 
     def account(self, name, status, session_string):
         self.name = name
@@ -83,6 +84,7 @@ class User(Base):
     channels = relationship("Channel")
     accounts = relationship("Account")
     schedules = relationship("Schedule")
+    delayd_messages = relationship("DelayedMessage")
 
 
 class Channel(Base):
@@ -111,3 +113,24 @@ class Setting(Base):
     max_wait_time = Column(Integer)  # максимальное время между сообщениями
     type = Column(String)
     account_id = Column(Integer, ForeignKey('accounts.id'))
+
+
+class DelayedMessage(Base):
+    __tablename__ = 'delayed_messages'
+    id = Column(Integer, primary_key=True)
+    text = Column(String)
+    schedule_id = Column(Integer, ForeignKey('schedules.id'))
+    send_time = Column(DateTime())
+    chat_id = Column(String)
+    owner_tg_id = Column(BigInteger, ForeignKey('users.tg_id'))
+    account_id = Column(Integer, ForeignKey('accounts.id'))
+    status = Column(String)
+
+    def delayedMessage(self, text, schedule_id, send_time, chat_id, owner_tg_id, account_id, status):
+        self.text = text
+        self.schedule_id = schedule_id
+        self.send_time = send_time
+        self.chat_id = chat_id
+        self.owner_tg_id = owner_tg_id
+        self.account_id = account_id
+        self.status = status

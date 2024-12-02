@@ -43,6 +43,7 @@ async def insert_user(tg_id):
         session.add(user)
         session.commit()
     except Exception as e:
+        session.rollback()
         print(e)
 
 
