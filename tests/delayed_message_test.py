@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, AsyncMock
 
 import pytest
 
@@ -39,7 +39,14 @@ async def test_add_delayed_message_to_wait(mock_session, mock_delayed_message, m
 
         # Проверяем, что commit был вызван
         mock_session.commit.assert_called_once()
-
+@pytest.mark.asyncio
+async def test_add_delayed_message_to_wait_error(mock_session, mock_delayed_message, mock_account):
+    """Тест добавления отложенного сообщения."""
+    with patch('psql_core.delayed_messages.session', mock_session):
+        mock_session.commit = AsyncMock(side_effect=Exception("something wrong"))
+        await add_delayed_message_to_wait("Test message", 123, 60, "chat_id", "owner_id", mock_account, "pending")
+        # Проверяем, что сообщение добавлено в сессию
+        assert mock_session.add.call_count == 1
 
 @pytest.mark.asyncio
 async def test_get_account_by_account_id(mock_session, mock_account):
