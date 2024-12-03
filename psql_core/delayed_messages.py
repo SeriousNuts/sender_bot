@@ -3,6 +3,7 @@ from datetime import timedelta, datetime
 
 from sqlalchemy.orm import sessionmaker
 from db_models import engine, DelayedMessage, Account
+from utills.format_erros import format_error_traceback
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -15,10 +16,11 @@ async def add_delayed_message_to_wait(text, schedule_id, delay_time, chat_id, ow
                                    chat_id=chat_id, owner_tg_id=owner_tg_id, account_id=account.get_id(), status=status)
 
     session.add(delayed_message)
+
     try:
         session.commit()
     except Exception as e:
-        logging.error(f"add_delayedMessage_to_db error {e.__traceback__}")
+        logging.error(f"add_delayedMessage_to_wait error {format_error_traceback(error=e)}")
         session.rollback()
 
 
