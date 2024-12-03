@@ -73,6 +73,12 @@ class Account(Base):
     def last_use_up(self, period):
         self.last_use = datetime.now() + timedelta(minutes=period)
 
+    def get_name(self):
+        return self.name
+
+    def get_id(self):
+        return self.id
+
 
 class User(Base):
     __tablename__ = 'users'
@@ -133,4 +139,7 @@ class DelayedMessage(Base):
         self.chat_id = chat_id
         self.owner_tg_id = owner_tg_id
         self.account_id = account_id
+        self.status = status
+
+    def set_status(self, status):
         self.status = status
