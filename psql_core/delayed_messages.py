@@ -16,12 +16,14 @@ async def add_delayed_message_to_wait(text, schedule_id, delay_time, chat_id, ow
                                    chat_id=chat_id, owner_tg_id=owner_tg_id, account_id=account.get_id(), status=status)
 
     session.add(delayed_message)
-
+    result = True
     try:
         session.commit()
     except Exception as e:
+        result = False
         logging.error(f"add_delayedMessage_to_wait error {format_error_traceback(error=e)}")
         session.rollback()
+    return result
 
 
 async def get_account_by_account_id(account_id):
@@ -47,8 +49,11 @@ async def get_delayd_messages():
 async def update_delayed_message_status(message):
     message = session.query(DelayedMessage).filter(DelayedMessage.id == message.id).first()
     message.status = "sended"
+    result = True
     try:
         session.commit()
     except Exception as e:
+        result = False
         logging.error(f"update_delayed_message_status error is {e.__traceback__}")
         session.rollback()
+    return result
