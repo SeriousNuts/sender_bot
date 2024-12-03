@@ -2,7 +2,7 @@ from sqlalchemy.orm import sessionmaker
 
 from MTProto_bot.pyro_scripts import get_app_by_session_string, send_message_to_tg
 from db_models import engine
-from psql_core.delayd_messages import get_delayd_messages, get_account_by_account_id, update_delayed_message_status
+from psql_core.delayed_messages import get_delayd_messages, get_account_by_account_id, update_delayed_message_status
 
 Session = sessionmaker(bind=engine)
 session = Session()

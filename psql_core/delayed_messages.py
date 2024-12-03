@@ -8,7 +8,7 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 
-def add_delayed_message_to_wait(text, schedule_id, delay_time, chat_id, owner_tg_id, account, status):
+async def add_delayed_message_to_wait(text, schedule_id, delay_time, chat_id, owner_tg_id, account, status):
     delayed_message = DelayedMessage()
     send_time = datetime.now() + timedelta(seconds=delay_time)
     delayed_message.delayedMessage(text=text, schedule_id=schedule_id, send_time=send_time,
@@ -22,8 +22,8 @@ def add_delayed_message_to_wait(text, schedule_id, delay_time, chat_id, owner_tg
         session.rollback()
 
 
-def get_account_by_account_id(account_id):
-    return session.query(Account).filter(Account.id == account_id)
+async def get_account_by_account_id(account_id):
+    return session.query(Account).filter(Account.id == account_id).first()
 
 
 async def get_delayd_messages():

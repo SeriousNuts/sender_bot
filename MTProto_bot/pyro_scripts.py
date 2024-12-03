@@ -11,7 +11,7 @@ from pyrogram.errors import FloodWait, BadRequest, Forbidden, SessionPasswordNee
     TakeoutInitDelay
 
 from db_models import Message
-from psql_core.delayd_messages import add_delayed_message_to_wait
+from psql_core.delayed_messages import add_delayed_message_to_wait
 from psql_core.utills import insert_message
 
 config = configparser.ConfigParser()
