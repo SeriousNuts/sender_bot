@@ -1,5 +1,5 @@
 import logging
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from sqlalchemy.orm import sessionmaker
 from db_models import engine, DelayedMessage, Account
@@ -10,7 +10,7 @@ session = Session()
 
 def add_delayed_message_to_wait(text, schedule_id, delay_time, chat_id, owner_tg_id, account, status):
     delayed_message = DelayedMessage()
-    send_time = delay_time + timedelta(seconds=delay_time)
+    send_time = datetime.now() + timedelta(seconds=delay_time)
     delayed_message.delayedMessage(text=text, schedule_id=schedule_id, send_time=send_time,
                                    chat_id=chat_id, owner_tg_id=owner_tg_id, account_id=account.get_id(), status=status)
 
