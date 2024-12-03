@@ -11,6 +11,7 @@ from pyrogram.errors import FloodWait, BadRequest, Forbidden, SessionPasswordNee
     TakeoutInitDelay
 
 from db_models import Message
+from psql_core.delayd_messages import add_delayed_message_to_wait
 from psql_core.utills import insert_message
 
 config = configparser.ConfigParser()
@@ -18,6 +19,9 @@ config.read('config.ini')
 api_id = int(config['secrets']['api_id'])
 api_hash = config['secrets']['api_hash']
 
+'''
+скрипты для взаимодействия с API телеграм через pyrogram
+'''
 
 # отправляем запрос на регистрацию
 async def add_account(phone_number_tg):
@@ -75,55 +79,56 @@ async def get_channels_by_app(app):
     return channels
 
 
-async def send_message_to_tg(text_message, app, channels, account_name, schedule_owner_id, schedule_uuid,
+async def send_message_to_tg(text_message, app, channels, account, schedule_owner_id, schedule_uuid,
                              sleep_time=1, max_wait_time=15):
     messages = []
     sending_uuid = uuid.uuid4()
-
+    # формируем очередь сообщений на отправку
     async with app:
         tasks = [send_message_to_channel(app=app, chat_id=ch, text_message=text_message, sending_uuid=sending_uuid,
-                                         account_name=account_name,
+                                         account=account,
                                          schedule_owner_id=schedule_owner_id, schedule_uuid=schedule_uuid,
                                          max_wait_time=max_wait_time, sleep_time=sleep_time) for ch in channels]
         results = await asyncio.gather(*tasks)
-
+        # сохраняем результат отправки в БД для статистики
         for sended_message in results:
             messages.append(sended_message)
             await insert_message(sended_message)
 
 
 async def send_message_to_channel(app, chat_id, text_message, sending_uuid,
-                                  account_name, schedule_owner_id, schedule_uuid, max_wait_time, sleep_time):
+                                  account, schedule_owner_id, schedule_uuid, max_wait_time, sleep_time):
     sended_message = Message()
     sended_message.sending_uuid = sending_uuid
-    sended_message.account_name = account_name
+    sended_message.account_name = account.get_name()
     sended_message.schedule_owner_id = schedule_owner_id
     sended_message.schedule_uuid = schedule_uuid
 
     try:
         await app.send_message(chat_id=chat_id, text=text_message)
         sended_message.set_message(text=text_message, sending_date=datetime.now(), status=0, channel=chat_id)
-        await asyncio.sleep(sleep_time)  # Ожидание между отправками
+        await asyncio.sleep(sleep_time)  # Обеспечиваем ожидание между отправками
     except (FloodWait, Flood, SlowmodeWait, TakeoutInitDelay) as e:
         if e.value <= max_wait_time:
             sended_message = await handle_flood_wait(exception=e, app=app, chat_id=chat_id, text_message=text_message,
                                                      sended_message=sended_message, max_wait_time=max_wait_time,
                                                      sleep_time=sleep_time)
         else:
-            # ожидание слишком велико, помечаем сообщение и не отправляем его
-            sended_message.flood_wait_time = e.value
-            sended_message.set_message(text=text_message, sending_date=datetime.now(), status=3, channel=chat_id)
+            # если время ожидания слишком велико, отправляем сообщения в длительное ожидание отправки
+            await add_delayed_message_to_wait(text=text_message, status='ready', chat_id=chat_id, delay_time=e.value,
+                                              owner_tg_id=schedule_owner_id, schedule_id=schedule_uuid, account=account)
+
     except BadRequest as e:
-        logging.debug(f"{chat_id} SENDING ERROR IS {e.NAME} from account:{account_name}")
+        logging.debug(f"{chat_id} SENDING ERROR IS {e.NAME} from account:{account.get_name()}")
         sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=chat_id)
     except Forbidden as e:
-        logging.debug(f"{chat_id} SENDING ERROR IS {e.NAME} from account:{account_name}")
+        logging.debug(f"{chat_id} SENDING ERROR IS {e.NAME} from account:{account.get_name()}")
         sended_message.set_message(text=text_message, sending_date=datetime.now(), status=1, channel=chat_id)
     except KeyError as e:
-        logging.debug(f"{chat_id} SENDING ERROR IS {str(e)} from account:{account_name}")
+        logging.debug(f"{chat_id} SENDING ERROR IS {str(e)} from account:{account.get_name()}")
         sended_message.set_message(text=text_message, sending_date=datetime.now(), status=5, channel=chat_id)
     except Exception as e:
-        logging.error(f"{chat_id} Unknown error while sending on channel: from account: {account_name}: {e}")
+        logging.error(f"{chat_id} Unknown error while sending on channel: from account: {account.get_name()}: {e}")
 
     return sended_message
 

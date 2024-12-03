@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from sqlalchemy import func
@@ -16,13 +17,18 @@ async def insert_account(tg_id, name, session_string):
     user = session.query(User).filter(
         User.tg_id == tg_id
     ).first()
+    result = False
     if user is not None:
         session.add(account)
         user.accounts.append(account)
-        session.commit()
-        return True
-    else:
-        return False
+        try:
+            session.commit()
+            result = True
+        except Exception as e:
+            logging.error(f"insert account error {e.__traceback__}")
+            session.rollback()
+
+    return result
 
 
 async def insert_schedule(period, message_text, owner_tg_id):
@@ -33,17 +39,22 @@ async def insert_schedule(period, message_text, owner_tg_id):
     schedule.status = "not sended"
     schedule.owner_tg_id = owner_tg_id
     session.add(schedule)
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        logging.error(f"insert schedule error {e.__traceback__}")
+        session.rollback()
 
 
 async def insert_user(tg_id):
     user = User()
     user.tg_id = tg_id
+    session.add(user)
     try:
-        session.add(user)
         session.commit()
     except Exception as e:
-        print(e)
+        logging.error(f"insert user error {e.__traceback__}")
+        session.rollback()
 
 
 async def get_user_schedules(owner_tg_id):
@@ -62,7 +73,11 @@ async def delete_schedule(owner_tg_id, sending_id):
 
 async def insert_message(message):
     session.add(message)
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        logging.error(f"insert message error {e.__traceback__}")
+        session.rollback()
 
 
 async def is_user_have_accounts(user_tg_id):
