@@ -16,7 +16,7 @@ session = Session()
 async def send_delayed_messages():
     messages = await get_delayd_messages()
     if not messages:
-        return
+        return  # Если нет сообщений, выходим из функции
     current_account = messages[0]
     one_account_messages = []
     for message in messages:
@@ -25,15 +25,16 @@ async def send_delayed_messages():
         else:
             # Отправляем сообщения для предыдущего аккаунта
             await send_one_account_messages(one_account_messages)
-            one_account_messages.clear()
+            one_account_messages.clear() # Очищаем список для следующего аккаунта
             current_account = message  # Обновляем текущий аккаунт
             one_account_messages.append(message)
+    # Отправляем сообщения последнего аккаунта
     if one_account_messages:
         await send_one_account_messages(one_account_messages)
 
 
 async def send_one_account_messages(one_account_messages):
-    account = get_account_by_account_id(one_account_messages[0].account_id)
+    account = await get_account_by_account_id(one_account_messages[0].account_id)
     app = await get_app_by_session_string(session_string=account.session_string,
                                           app_name=account.name)
     for oam in one_account_messages:
