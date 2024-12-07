@@ -24,6 +24,7 @@ class StatusMessage(Enum):
     FLOOD = 3
     NOTSENDED = 4
     NOTFOUND = 5
+    Delayed = 6
 
 
 class MaxWaitTimeSchedule(Enum):

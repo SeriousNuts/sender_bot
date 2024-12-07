@@ -12,10 +12,12 @@ from MTProto_bot.pyro_scripts import add_account, \
 from psql_core.utills import *
 from tg_bot import buttons
 from tg_bot.buttons import *
-from tg_bot.callback_fabrics import get_keyboard_delete_sending, DeleteSendingCallbackFactory, get_menu_inline_keyboard, \
-    GetMyAccountsCallbackFactory
+from tg_bot.callback_fabrics import get_keyboard_delete_sending, DeleteSendingCallbackFactory,\
+    get_menu_inline_keyboard, \
+    GetMyAccountsCallbackFactory, get_manage_account_keyboard
 from tg_bot.models.Forms import StartSendingForm, SignUpForm
 from utills.phone_check import *
+from utills.stats_format import get_period_stats_by_tg_owner_id
 
 config_ini = configparser.ConfigParser()
 config_ini.read('config.ini')
@@ -129,14 +131,16 @@ async def menu(message: Message) -> None:
 async def delete_schedule_callback(query: CallbackQuery, callback_data: DeleteSendingCallbackFactory):
     await delete_schedule(owner_tg_id=callback_data.owner_id, sending_id=callback_data.sending_id)
     await bot.send_message(callback_data.owner_id, f"Сообщение удалено")
+    await query.answer()
 
 
 @dp.message(F.text.lower() == "menu")
 async def get_my_account(message: Message) -> None:
-    # получение информации об аккаунте
-    await bot.send_message(message.from_user.id, "ID аккаунта:\n"
-                                                 f"Баланс:\n"
-                                                 f"Аккаунтов для рассылки:",
+    stats = await get_period_stats_by_tg_owner_id(tg_onwer_id=message.from_user.id, days_before=7)
+    await bot.send_message(message.from_user.id, f"ID аккаунта: {message.from_user.id}\n"
+                                                 f"Количество рассылок:\n"
+                                                 f"Аккаунтов для рассылки:\n"
+                                                 f"{stats}",
                            reply_markup=get_menu_inline_keyboard(tg_owner_id=str(message.from_user.id)))
 
 
@@ -152,8 +156,12 @@ async def my_account_callback(query: CallbackQuery, callback_data: GetMyAccounts
     for a in accounts:
         await bot.send_message(callback_data.owner_id, f"<b>Имя аккаунта:</b> {a.name}\n"
                                                        f"<b>Статус:</b> {a.status}",
+                               reply_markup=get_manage_account_keyboard(account_id=a.id,
+                                                                        tg_owner_id=callback_data.owner_id),
                                parse_mode='HTML')
 
+
+@dp.callback_query(GetMyAccountsCallbackFactory.filter(F.action == "my_accounts"))
 
 @dp.callback_query(F.data == "add_account")
 async def add_account_callback(callback: CallbackQuery, state: FSMContext):

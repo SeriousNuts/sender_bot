@@ -22,10 +22,11 @@ async def send_schedule_stats_to_user(schedule_uuid, schedule_owner_id, schedule
         logging.error(f"send stats to user error: {e} \n error in {e.__traceback__}")
 
 
-async def send_period_stats_to_user(tg_onwer_id, days_before):
+async def get_period_stats_by_tg_owner_id(tg_onwer_id, days_before):
     stats = await get_stats_by_interval(tg_owner_id=tg_onwer_id, days_before=days_before)
     message = (f"Статистика за период с {datetime.now().day - timedelta(days_before).days} по {datetime.now().day}\n" +
-               f"<b>Успешно:</b> {stats.sended_message_count}{stats.get_all_message_count()} \n" +
+               f"<b>Успешно:</b> {stats.sended_message_count}\n" +
+               f"<b>Всего сообщений</b> {stats.get_all_message_count()}\n" +
                f"<b>Временный бан:</b> {stats.forbidden_message_count}\n" +
-               f"<b>Не прошло флуд фильтр:</b> <code>{stats.flood_wait_message_count}</code>")
+               f"<b>Не прошло флуд фильтр:</b> {stats.flood_wait_message_count}")
     return message

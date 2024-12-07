@@ -117,7 +117,7 @@ async def send_message_to_channel(app, chat_id, text_message, sending_uuid,
             # если время ожидания слишком велико, отправляем сообщения в длительное ожидание отправки
             await add_delayed_message_to_wait(text=text_message, status='ready', chat_id=chat_id, delay_time=e.value,
                                               owner_tg_id=schedule_owner_id, schedule_id=schedule_uuid, account=account)
-
+            sended_message.set_message(text=text_message, sending_date=datetime.now(), status=6, channel=chat_id)
     except BadRequest as e:
         logging.debug(f"{chat_id} SENDING ERROR IS {e.NAME} from account:{account.get_name()}")
         sended_message.set_message(text=text_message, sending_date=datetime.now(), status=2, channel=chat_id)

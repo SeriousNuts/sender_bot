@@ -1,7 +1,7 @@
 /config.ini
 /migration/
 /*.session
-/test.py
+/hypytesis.py
 /*.log
 /*.csv
 /*.txt
