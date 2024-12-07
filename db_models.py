@@ -126,15 +126,17 @@ class DelayedMessage(Base):
     id = Column(Integer, primary_key=True)
     text = Column(String)
     schedule_uuid = Column(String)
+    delay_time = Column(Integer)
     send_time = Column(DateTime())
     chat_id = Column(String)
     owner_tg_id = Column(BigInteger, ForeignKey('users.tg_id'))
     account_id = Column(Integer, ForeignKey('accounts.id'))
     status = Column(String)
 
-    def delayedMessage(self, text, schedule_id, send_time, chat_id, owner_tg_id, account_id, status):
+    def delayedMessage(self, text, schedule_id, send_time, delay_time, chat_id, owner_tg_id, account_id, status):
         self.text = text
         self.schedule_uuid = schedule_id
+        self.delay_time = delay_time
         self.send_time = send_time
         self.chat_id = chat_id
         self.owner_tg_id = owner_tg_id

@@ -6,7 +6,6 @@ import sys
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 
-# from aio_bot.config import TOKEN, TOKEN_TEST
 from tg_bot.handlers import dp
 
 config = configparser.ConfigParser()

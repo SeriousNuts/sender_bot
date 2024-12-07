@@ -5,6 +5,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import sessionmaker
 
 from db_models import Account, engine, Schedule, User
+from utills.format_erros import format_error_traceback
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -25,7 +26,7 @@ async def insert_account(tg_id, name, session_string):
             session.commit()
             result = True
         except Exception as e:
-            logging.error(f"insert account error {e.__traceback__}")
+            logging.error(f"insert account error {format_error_traceback(error=e)}")
             session.rollback()
 
     return result
@@ -42,7 +43,7 @@ async def insert_schedule(period, message_text, owner_tg_id):
     try:
         session.commit()
     except Exception as e:
-        logging.error(f"insert schedule error {e.__traceback__}")
+        logging.error(f"insert schedule error {format_error_traceback(error=e)}")
         session.rollback()
 
 
@@ -53,7 +54,7 @@ async def insert_user(tg_id):
     try:
         session.commit()
     except Exception as e:
-        logging.error(f"insert user error {e.__traceback__}")
+        logging.error(f"insert user error {format_error_traceback(error=e)}")
         session.rollback()
 
 
@@ -76,7 +77,7 @@ async def insert_message(message):
     try:
         session.commit()
     except Exception as e:
-        logging.error(f"insert message error {e.__traceback__}")
+        logging.error(f"insert message error {format_error_traceback(error=e)}")
         session.rollback()
 
 
