@@ -24,6 +24,7 @@ class StatusMessage(Enum):
     FLOOD = 3
     NOTSENDED = 4
     NOTFOUND = 5
+    Delayed = 6
 
 
 class MaxWaitTimeSchedule(Enum):
@@ -42,7 +43,7 @@ class Message(Base):
     status = Column(Integer, index=True)
     channel = Column(String)
     account_name = Column(String)
-    schedule_owner_id = Column(String)
+    schedule_owner_id = Column(BigInteger)
     flood_wait_time = Column(Integer)
 
     def set_message(self, text, sending_date, status, channel):
@@ -78,6 +79,13 @@ class Account(Base):
 
     def get_id(self):
         return self.id
+
+    def invert_status(self):
+        """Инвертирует статус объекта между 'on' и 'off'."""
+        if self.status not in ["on", "off"]:
+            raise ValueError("Status must be either 'on' or 'off'.")
+
+        self.status = "off" if self.status == "on" else "on"
 
 
 class User(Base):

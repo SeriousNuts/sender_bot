@@ -69,7 +69,11 @@ async def delete_schedule(owner_tg_id, sending_id):
     schedules = session.query(Schedule).filter(Schedule.id == sending_id, Schedule.owner_tg_id == owner_tg_id).first()
     if schedules is not None:
         session.delete(schedules)
-        session.commit()
+        try:
+            session.commit()
+        except Exception as e:
+            logging.error(f"delete schedule error {format_error_traceback(error=e)}")
+            session.rollback()
 
 
 async def insert_message(message):
@@ -87,3 +91,16 @@ async def is_user_have_accounts(user_tg_id):
 
 async def get_accounts_by_tg_id(tg_id):
     return session.query(Account).filter(Account.owner_tg_id == tg_id).all()
+
+async def invert_account_status(account_id, tg_owner_id: str):
+    account = session.query(Account).filter(Account.id == account_id, Account.owner_tg_id == tg_owner_id).first()
+    if account is None:
+        return
+    account.invert_status()
+    session.add(account)
+    try:
+        session.commit()
+    except Exception as e:
+        logging.error(f"invert account status error {format_error_traceback(error=e)}")
+        session.rollback()
+    return account.status
