@@ -163,7 +163,7 @@ async def my_account_callback(query: CallbackQuery, callback_data: GetMyAccounts
                                parse_mode='HTML')
 
 
-@dp.callback_query(GetMyAccountsCallbackFactory.filter(F.action == "change_account_status"))
+@dp.callback_query(GetMyAccountsCallbackFactory.filter(F.action == "ch_acc_st"))
 async def change_account_status_callback(query: CallbackQuery, callback_data: ChangeMyAccountStatusCallbackFactory):
     status = await invert_account_status(account_id=callback_data.account_id, tg_owner_id=callback_data.owner_id)
     await query.answer()
