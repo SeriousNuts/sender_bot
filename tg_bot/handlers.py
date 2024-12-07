@@ -12,9 +12,9 @@ from MTProto_bot.pyro_scripts import add_account, \
 from psql_core.utills import *
 from tg_bot import buttons
 from tg_bot.buttons import *
-from tg_bot.callback_fabrics import get_keyboard_delete_sending, DeleteSendingCallbackFactory,\
+from tg_bot.callback_fabrics import get_keyboard_delete_sending, DeleteSendingCallbackFactory, \
     get_menu_inline_keyboard, \
-    GetMyAccountsCallbackFactory, get_manage_account_keyboard
+    GetMyAccountsCallbackFactory, get_manage_account_keyboard, ChangeMyAccountStatusCallbackFactory
 from tg_bot.models.Forms import StartSendingForm, SignUpForm
 from utills.phone_check import *
 from utills.stats_format import get_period_stats_by_tg_owner_id
@@ -136,12 +136,13 @@ async def delete_schedule_callback(query: CallbackQuery, callback_data: DeleteSe
 
 @dp.message(F.text.lower() == "menu")
 async def get_my_account(message: Message) -> None:
-    stats = await get_period_stats_by_tg_owner_id(tg_onwer_id=message.from_user.id, days_before=7)
+    stats = await get_period_stats_by_tg_owner_id(days_before=7, tg_onwer_id=message.from_user.id)
     await bot.send_message(message.from_user.id, f"ID аккаунта: {message.from_user.id}\n"
                                                  f"Количество рассылок:\n"
                                                  f"Аккаунтов для рассылки:\n"
                                                  f"{stats}",
-                           reply_markup=get_menu_inline_keyboard(tg_owner_id=str(message.from_user.id)))
+                           reply_markup=get_menu_inline_keyboard(tg_owner_id=message.from_user.id),
+                           parse_mode='HTML')
 
 
 @dp.callback_query(GetMyAccountsCallbackFactory.filter(F.action == "my_accounts"))
@@ -157,11 +158,18 @@ async def my_account_callback(query: CallbackQuery, callback_data: GetMyAccounts
         await bot.send_message(callback_data.owner_id, f"<b>Имя аккаунта:</b> {a.name}\n"
                                                        f"<b>Статус:</b> {a.status}",
                                reply_markup=get_manage_account_keyboard(account_id=a.id,
-                                                                        tg_owner_id=callback_data.owner_id),
+                                                                        tg_owner_id=callback_data.owner_id,
+                                                                        account_name=a.name),
                                parse_mode='HTML')
 
 
-@dp.callback_query(GetMyAccountsCallbackFactory.filter(F.action == "my_accounts"))
+@dp.callback_query(GetMyAccountsCallbackFactory.filter(F.action == "change_account_status"))
+async def change_account_status_callback(query: CallbackQuery, callback_data: ChangeMyAccountStatusCallbackFactory):
+    status = await invert_account_status(account_id=callback_data.account_id, tg_owner_id=callback_data.owner_id)
+    await query.answer()
+    await query.message.edit_text(text=f"<b>Имя аккаунта:</b> {callback_data.account_name}\n"
+                                       f"<b>Статус:</b> {status}", parse_mode='HTML')
+
 
 @dp.callback_query(F.data == "add_account")
 async def add_account_callback(callback: CallbackQuery, state: FSMContext):

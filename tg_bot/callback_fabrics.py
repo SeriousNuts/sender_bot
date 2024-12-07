@@ -24,7 +24,7 @@ class DeleteSendingCallbackFactory(CallbackData, prefix="delete_sending"):
 
 class ChangeSendingTextCallbackFactory(CallbackData, prefix="change_sending_text"):
     action: str
-    owner_id: str
+    owner_id: int
     sending_id: int
 
 
@@ -42,10 +42,10 @@ def get_menu_inline_keyboard(tg_owner_id):
 
 class GetMyAccountsCallbackFactory(CallbackData, prefix="my_accounts"):
     action: str
-    owner_id: str
+    owner_id: int
 
 
-def get_manage_account_keyboard(tg_owner_id, account_id):
+def get_manage_account_keyboard(tg_owner_id, account_id, account_name):
     delete_account_btn = InlineKeyboardButton(
         text="Удалить аккаунт",
         callback_data=DeletMyAccountCallbackFactory(action="delete_accounts", tg_owner_id=tg_owner_id,
@@ -54,18 +54,19 @@ def get_manage_account_keyboard(tg_owner_id, account_id):
     change_account_status_btn = InlineKeyboardButton(
         text="Сменить статус",
         callback_data=ChangeMyAccountStatusCallbackFactory(action="change_account_status", tg_owner_id=tg_owner_id,
-                                                           account_id=account_id).pack()
+                                                           account_id=account_id, account_name=account_name).pack()
     )
     return InlineKeyboardMarkup(inline_keyboard=[[delete_account_btn], [change_account_status_btn]])
 
 
 class DeletMyAccountCallbackFactory(CallbackData, prefix="delete_account"):
     action: str
-    owner_id: str
+    owner_id: int
     account_id: int
 
 
 class ChangeMyAccountStatusCallbackFactory(CallbackData, prefix="change_account_status"):
     action: str
-    owner_id: str
+    owner_id: int
     account_id: int
+    account_name: str
