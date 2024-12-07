@@ -44,7 +44,7 @@ async def test_add_delayed_message_to_wait_error(mock_session, mock_delayed_mess
     """Тест добавления отложенного сообщения."""
     with patch('psql_core.delayed_messages.session', mock_session):
         mock_session.commit = AsyncMock(side_effect=Exception("something wrong"))
-        await add_delayed_message_to_wait("Test message", 123, 60, "chat_id", "owner_id", mock_account, "pending")
+        await add_delayed_message_to_wait(text="Test message", schedule_id=123, delay_time=60, chat_id="chat_id", owner_tg_id="owner_id", account=mock_account, status="test_ready")
         # Проверяем, что сообщение добавлено в сессию
         assert mock_session.add.call_count == 1
 
