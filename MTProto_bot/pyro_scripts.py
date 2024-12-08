@@ -7,12 +7,12 @@ from datetime import datetime
 
 from pyrogram import Client
 from pyrogram.errors import FloodWait, BadRequest, Forbidden, SessionPasswordNeeded, SlowmodeWait, Flood, \
-    TakeoutInitDelay
+    TakeoutInitDelay, UserDeactivated, UserDeactivatedBan
 
 from db_models import Message
 from psql_core.delayed_messages import add_delayed_message_to_wait
-from psql_core.utills import insert_message
-
+from psql_core.utills import insert_message, deactivate_account
+from utills.format_erros import format_error_traceback
 config = configparser.ConfigParser()
 config.read('config.ini')
 api_id = int(config['secrets']['api_id'])
@@ -71,21 +71,26 @@ async def get_channels_by_app(app):
 отправка одного сообщения во множество каналов, с одного аккаунта
 '''
 async def send_message_to_tg(text_message, app, channels, account, schedule_owner_id, schedule_uuid,
-                             sleep_time=10, max_wait_time=15, schedule_id=None):
+                             sleep_time=15, max_wait_time=15, schedule_id=None):
     messages = []
     sending_uuid = uuid.uuid4()
     # формируем очередь сообщений на отправку
-    async with app:
-        tasks = [send_message_to_channel(app=app, chat_id=ch, text_message=text_message, sending_uuid=sending_uuid,
-                                         account=account,
-                                         schedule_owner_id=schedule_owner_id, schedule_uuid=schedule_uuid,
-                                         max_wait_time=max_wait_time, sleep_time=sleep_time,
-                                         schedule_id=schedule_id) for ch in channels]
-        results = await asyncio.gather(*tasks)
-        # сохраняем результат отправки в БД для статистики
-        for sended_message in results:
-            messages.append(sended_message)
-            await insert_message(sended_message)
+    try:
+        async with app:
+            tasks = [send_message_to_channel(app=app, chat_id=ch, text_message=text_message, sending_uuid=sending_uuid,
+                                             account=account,
+                                             schedule_owner_id=schedule_owner_id, schedule_uuid=schedule_uuid,
+                                             max_wait_time=max_wait_time, sleep_time=sleep_time,
+                                             schedule_id=schedule_id) for ch in channels]
+            results = await asyncio.gather(*tasks)
+            # сохраняем результат отправки в БД для статистики
+            for sended_message in results:
+                messages.append(sended_message)
+                await insert_message(sended_message)
+    except (UserDeactivated, UserDeactivatedBan) as e:
+        logging.error(f"{format_error_traceback(error=e)}\n Account was Deactivated. Account {account.get_name()}"
+                      f" will be turn off")
+        await deactivate_account(account_id=account.id)
 
 '''
 отправка одного сообщения в один канал с одного аккаунта

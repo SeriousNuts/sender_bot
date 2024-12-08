@@ -99,6 +99,15 @@ async def get_accounts_by_tg_id(tg_id):
     # noinspection PyTypeChecker
     return session.query(Account).filter(Account.owner_tg_id == tg_id, Account.status == "on").all()
 
+async def deactivate_account(account_id):
+    account = session.query(Account).filter(Account.id == account_id).first()
+    account.status = 'Deactivated'
+    try:
+        session.commit()
+    except Exception as e:
+        logging.error(f"deactivate account error {format_error_traceback(error=e)}")
+        session.rollback()
+
 async def invert_account_status(account_id, tg_owner_id):
     account = session.query(Account).filter(Account.id == account_id, Account.owner_tg_id == tg_owner_id).first()
     if account is None:
