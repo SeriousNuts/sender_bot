@@ -30,7 +30,7 @@ async def get_schedules():
 
 async def send_messages():
     schedules = await get_schedules()  # получаем список заданий
-    #tasks_queue = []
+    tasks_queue = []
     schedule_uuid_list = []
     for s in schedules:
         accounts = await get_accounts_by_tg_id(tg_id=s.owner_tg_id)
@@ -39,12 +39,12 @@ async def send_messages():
         for acc in accounts:
             app = await get_app_by_session_string(session_string=acc.session_string, app_name=acc.name)
             channels = await get_channels_by_app(app)
-            await send_message_to_tg(text_message=s.text, app=app, channels=channels,
+            tasks_queue.append(asyncio.create_task(send_message_to_tg(text_message=s.text, app=app, channels=channels,
                                                                       account=acc,
                                                                       schedule_owner_id=s.owner_tg_id,
                                                                       schedule_uuid=schedule_uuid,
-                                                                      schedule_id=s.id)
-    #await asyncio.gather(*tasks_queue)  # ожидаем завершения всех задач на отправку сообщений
+                                                                      schedule_id=s.id)))
+    await asyncio.gather(*tasks_queue)  # ожидаем завершения всех задач на отправку сообщений
     for index, s in enumerate(schedules):
         try:
             s.last_sening = datetime.now()

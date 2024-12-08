@@ -67,14 +67,14 @@ async def get_user_schedules(owner_tg_id):
 
 async def delete_schedule(owner_tg_id, sending_id):
     # noinspection PyTypeChecker
-    del_mes_status = "ready"
-    schedules = session.query(Schedule).filter(Schedule.id == sending_id, Schedule.owner_tg_id == owner_tg_id).first()
-    delayed_messages = session.query(DelayedMessage).filter(DelayedMessage.schedule_id == sending_id,
-                                                            DelayedMessage.status == del_mes_status).all()
-    if schedules is not None:
-        session.delete(schedules)
+    schedule = session.query(Schedule).filter(Schedule.id == sending_id, Schedule.owner_tg_id == owner_tg_id).first()
+    delayed_messages = session.query(DelayedMessage).filter(DelayedMessage.schedule_id == sending_id).all()
+
+    if schedule is not None:
         if len(delayed_messages) > 0:
-            session.delete(delayed_messages)
+            for del_m in delayed_messages:
+                session.delete(del_m)
+        session.delete(schedule)
         try:
             session.commit()
         except Exception as e:
