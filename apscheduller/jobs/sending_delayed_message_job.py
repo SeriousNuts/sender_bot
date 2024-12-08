@@ -36,7 +36,7 @@ async def send_delayed_messages():
 async def send_one_account_messages(one_account_messages):
     account = await get_account_by_account_id(one_account_messages[0].account_id)
     # проверяем, что аккаунт включён
-    if account.status is not "on":
+    if account.status != "on":
         return
     app = await get_app_by_session_string(session_string=account.session_string,
                                           app_name=account.name)
