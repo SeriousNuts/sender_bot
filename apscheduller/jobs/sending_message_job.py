@@ -43,7 +43,7 @@ async def send_messages():
                                                                       account=acc,
                                                                       schedule_owner_id=s.owner_tg_id,
                                                                       schedule_uuid=schedule_uuid,
-                                                                      schedule_id=s.schedule_id)))
+                                                                      schedule_id=s.id)))
     await asyncio.gather(*tasks_queue)  # ожидаем завершения всех задач на отправку сообщений
     for index, s in enumerate(schedules):
         try:
