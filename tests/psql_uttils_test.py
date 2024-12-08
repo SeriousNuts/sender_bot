@@ -220,8 +220,10 @@ async def test_get_accounts_by_tg_owner_id_success(mock_session):
     # Создаем список имитированных аккаунтов
     account1 = Account()
     account1.owner_tg_id = 12345
+    account1.status = "on"
     account2 = Account()
     account2.owner_tg_id = 12345
+    account2.status = "on"
 
     # Настраиваем поведение mock-сессии
     mock_session.query.return_value.filter.return_value.all.return_value = [account1, account2]

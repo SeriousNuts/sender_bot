@@ -90,7 +90,8 @@ async def is_user_have_accounts(user_tg_id):
 
 
 async def get_accounts_by_tg_id(tg_id):
-    return session.query(Account).filter(Account.owner_tg_id == tg_id).all()
+    on_status = "on"
+    return session.query(Account).filter(Account.owner_tg_id == tg_id, Account.status == on_status).all()
 
 async def invert_account_status(account_id, tg_owner_id):
     account = session.query(Account).filter(Account.id == account_id, Account.owner_tg_id == tg_owner_id).first()

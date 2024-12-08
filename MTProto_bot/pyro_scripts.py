@@ -80,7 +80,7 @@ async def get_channels_by_app(app):
 
 
 async def send_message_to_tg(text_message, app, channels, account, schedule_owner_id, schedule_uuid,
-                             sleep_time=1, max_wait_time=15):
+                             sleep_time=10, max_wait_time=15):
     messages = []
     sending_uuid = uuid.uuid4()
     # формируем очередь сообщений на отправку

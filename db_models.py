@@ -133,10 +133,11 @@ class DelayedMessage(Base):
     __tablename__ = 'delayed_messages'
     id = Column(Integer, primary_key=True)
     text = Column(String)
-    schedule_uuid = Column(String)
+    schedule_uuid = Column(String)  # уникальный uuid отправки
     delay_time = Column(Integer)
     send_time = Column(DateTime())
     chat_id = Column(String)
+    schedule_id = Column(Integer, ForeignKey('schedules.id'))
     owner_tg_id = Column(BigInteger, ForeignKey('users.tg_id'))
     account_id = Column(Integer, ForeignKey('accounts.id'))
     status = Column(String)
