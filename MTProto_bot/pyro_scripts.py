@@ -13,6 +13,7 @@ from db_models import Message
 from psql_core.delayed_messages import add_delayed_message_to_wait
 from psql_core.utills import insert_message, deactivate_account
 from utills.format_erros import format_error_traceback
+
 config = configparser.ConfigParser()
 config.read('config.ini')
 api_id = int(config['secrets']['api_id'])
@@ -21,6 +22,7 @@ api_hash = config['secrets']['api_hash']
 '''
 скрипты для взаимодействия с API телеграм через pyrogram
 '''
+
 
 # отправляем запрос на регистрацию
 async def add_account(phone_number_tg):
@@ -67,22 +69,28 @@ async def get_channels_by_app(app):
                 channels.append(str(dialog.chat.username))
     return channels
 
+
 '''
 отправка одного сообщения во множество каналов, с одного аккаунта
 '''
+
+
 async def send_message_to_tg(text_message, app, channels, account, schedule_owner_id, schedule_uuid,
                              sleep_time=15, max_wait_time=15, schedule_id=None):
     messages = []
     sending_uuid = uuid.uuid4()
+    results = []
     # формируем очередь сообщений на отправку
     try:
         async with app:
-            tasks = [send_message_to_channel(app=app, chat_id=ch, text_message=text_message, sending_uuid=sending_uuid,
-                                             account=account,
-                                             schedule_owner_id=schedule_owner_id, schedule_uuid=schedule_uuid,
-                                             max_wait_time=max_wait_time, sleep_time=sleep_time,
-                                             schedule_id=schedule_id) for ch in channels]
-            results = await asyncio.gather(*tasks)
+            for ch in channels:
+                res = await send_message_to_channel(app=app, chat_id=ch, text_message=text_message,
+                                                    sending_uuid=sending_uuid,
+                                                    account=account,
+                                                    schedule_owner_id=schedule_owner_id, schedule_uuid=schedule_uuid,
+                                                    max_wait_time=max_wait_time, sleep_time=sleep_time,
+                                                    schedule_id=schedule_id)
+                results.append(res)
             # сохраняем результат отправки в БД для статистики
             for sended_message in results:
                 messages.append(sended_message)
@@ -92,9 +100,12 @@ async def send_message_to_tg(text_message, app, channels, account, schedule_owne
                       f" will be turn off")
         await deactivate_account(account_id=account.id)
 
+
 '''
 отправка одного сообщения в один канал с одного аккаунта
 '''
+
+
 async def send_message_to_channel(app, chat_id, text_message, sending_uuid,
                                   account, schedule_owner_id, schedule_uuid, max_wait_time, sleep_time,
                                   schedule_id):
@@ -104,7 +115,7 @@ async def send_message_to_channel(app, chat_id, text_message, sending_uuid,
     sended_message.schedule_owner_id = schedule_owner_id
     sended_message.schedule_uuid = schedule_uuid
     # делаем время ожидания между отправками случайным, для каждого сообщения
-    sleep_time = random.randint(a=sleep_time, b=int(sleep_time*1.4))
+    sleep_time = random.randint(a=sleep_time, b=int(sleep_time * 1.4))
 
     try:
         await app.send_message(chat_id=chat_id, text=text_message)
