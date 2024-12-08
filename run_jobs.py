@@ -5,7 +5,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pytz import utc
 
 from apscheduller.jobs.sending_message_job import send_messages
-from apscheduller.jobs.sending_delayd_message_job import send_delayed_messages
+from apscheduller.jobs.sending_delayed_message_job import send_delayed_messages
 from apscheduller.scheduler_conf import jobstores, executors, job_defaults
 logging.basicConfig(level=logging.INFO, filename="py_log.log", filemode="a",
                     format="%(asctime)s %(levelname)s %(message)s")

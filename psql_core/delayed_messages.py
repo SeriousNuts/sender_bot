@@ -10,12 +10,13 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 
-async def add_delayed_message_to_wait(text, schedule_id, delay_time, chat_id, owner_tg_id, account, status):
+async def add_delayed_message_to_wait(text, schedule_uuid, delay_time, chat_id, owner_tg_id, account, status,
+                                      schedule_id):
     delayed_message = DelayedMessage()
     send_time = datetime.now() + timedelta(seconds=delay_time)
-    delayed_message.delayedMessage(text=text, schedule_id=schedule_id, send_time=send_time,
+    delayed_message.delayedMessage(text=text, schedule_uuid=schedule_uuid, send_time=send_time,
                                    chat_id=chat_id, owner_tg_id=owner_tg_id, account_id=account.get_id(),
-                                   status=status, delay_time=delay_time)
+                                   status=status, delay_time=delay_time, schedule_id=schedule_id)
 
     session.add(delayed_message)
     result = True

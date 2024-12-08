@@ -35,9 +35,13 @@ async def send_delayed_messages():
 
 async def send_one_account_messages(one_account_messages):
     account = await get_account_by_account_id(one_account_messages[0].account_id)
+    # проверяем, что аккаунт включён
+    if account.status is not "on":
+        return
     app = await get_app_by_session_string(session_string=account.session_string,
                                           app_name=account.name)
     for oam in one_account_messages:
         await send_message_to_tg(text_message=oam.text, account=account, app=app, channels=[oam.chat_id],
-                                 schedule_uuid=oam.schedule_uuid, schedule_owner_id=oam.owner_tg_id)
+                                 schedule_uuid=oam.schedule_uuid, schedule_owner_id=oam.owner_tg_id,
+                                 schedule_id=oam.schedule_id)
         await update_delayed_message_status(message=oam)

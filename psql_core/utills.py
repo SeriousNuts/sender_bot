@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy import func
 from sqlalchemy.orm import sessionmaker
 
-from db_models import Account, engine, Schedule, User
+from db_models import Account, engine, Schedule, User, DelayedMessage
 from utills.format_erros import format_error_traceback
 
 Session = sessionmaker(bind=engine)
@@ -66,9 +66,15 @@ async def get_user_schedules(owner_tg_id):
 
 
 async def delete_schedule(owner_tg_id, sending_id):
+    # noinspection PyTypeChecker
+    del_mes_status = "ready"
     schedules = session.query(Schedule).filter(Schedule.id == sending_id, Schedule.owner_tg_id == owner_tg_id).first()
+    delayed_messages = session.query(DelayedMessage).filter(DelayedMessage.schedule_id == sending_id,
+                                                            DelayedMessage.status == del_mes_status).all()
     if schedules is not None:
         session.delete(schedules)
+        if len(delayed_messages) > 0:
+            session.delete(delayed_messages)
         try:
             session.commit()
         except Exception as e:
@@ -90,7 +96,17 @@ async def is_user_have_accounts(user_tg_id):
 
 
 async def get_accounts_by_tg_id(tg_id):
-    return session.query(Account).filter(Account.owner_tg_id == tg_id).all()
+    # noinspection PyTypeChecker
+    return session.query(Account).filter(Account.owner_tg_id == tg_id, Account.status == "on").all()
+
+async def deactivate_account(account_id):
+    account = session.query(Account).filter(Account.id == account_id).first()
+    account.status = 'Deactivated'
+    try:
+        session.commit()
+    except Exception as e:
+        logging.error(f"deactivate account error {format_error_traceback(error=e)}")
+        session.rollback()
 
 async def invert_account_status(account_id, tg_owner_id):
     account = session.query(Account).filter(Account.id == account_id, Account.owner_tg_id == tg_owner_id).first()
