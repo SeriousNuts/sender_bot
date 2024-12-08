@@ -1,8 +1,7 @@
 import asyncio
 import configparser
-import csv
 import logging
-import os
+import random
 import uuid
 from datetime import datetime
 
@@ -55,19 +54,9 @@ async def check_client_code(code, app, phone_number_tg, phone_hash_tg):
     return result
 
 
-def get_channels():
-    channels = []
-    path = os.getcwd()
-    channels_path = os.path.join(path, "sender_bot", "aio_bot", "channels.csv")
-    with open(channels_path, encoding='UTF-8') as r_file:
-        file_reader = csv.DictReader(r_file, delimiter=";")
-        for row in file_reader:
-            channels.append(row['ссылка на канал'])
-    return channels
-
-
 async def get_app_by_session_string(session_string, app_name):
-    return Client(name=app_name, session_string=session_string, in_memory=True)
+    return Client(name=app_name, session_string=session_string, in_memory=True, device_model='Samsung Galaxy S24+',
+                  app_version="Telegram Android 11.5.3", system_version="Android 14")
 
 
 async def get_channels_by_app(app):
@@ -78,9 +67,11 @@ async def get_channels_by_app(app):
                 channels.append(str(dialog.chat.username))
     return channels
 
-
+'''
+отправка одного сообщения во множество каналов, с одного аккаунта
+'''
 async def send_message_to_tg(text_message, app, channels, account, schedule_owner_id, schedule_uuid,
-                             sleep_time=10, max_wait_time=15):
+                             sleep_time=10, max_wait_time=15, schedule_id=None):
     messages = []
     sending_uuid = uuid.uuid4()
     # формируем очередь сообщений на отправку
@@ -88,21 +79,27 @@ async def send_message_to_tg(text_message, app, channels, account, schedule_owne
         tasks = [send_message_to_channel(app=app, chat_id=ch, text_message=text_message, sending_uuid=sending_uuid,
                                          account=account,
                                          schedule_owner_id=schedule_owner_id, schedule_uuid=schedule_uuid,
-                                         max_wait_time=max_wait_time, sleep_time=sleep_time) for ch in channels]
+                                         max_wait_time=max_wait_time, sleep_time=sleep_time,
+                                         schedule_id=schedule_id) for ch in channels]
         results = await asyncio.gather(*tasks)
         # сохраняем результат отправки в БД для статистики
         for sended_message in results:
             messages.append(sended_message)
             await insert_message(sended_message)
 
-
+'''
+отправка одного сообщения в один канал с одного аккаунта
+'''
 async def send_message_to_channel(app, chat_id, text_message, sending_uuid,
-                                  account, schedule_owner_id, schedule_uuid, max_wait_time, sleep_time):
+                                  account, schedule_owner_id, schedule_uuid, max_wait_time, sleep_time,
+                                  schedule_id):
     sended_message = Message()
     sended_message.sending_uuid = sending_uuid
     sended_message.account_name = account.get_name()
     sended_message.schedule_owner_id = schedule_owner_id
     sended_message.schedule_uuid = schedule_uuid
+    # делаем время ожидания между отправками случайным, для каждого сообщения
+    sleep_time = random.randint(a=sleep_time, b=int(sleep_time*1.4))
 
     try:
         await app.send_message(chat_id=chat_id, text=text_message)
@@ -116,7 +113,8 @@ async def send_message_to_channel(app, chat_id, text_message, sending_uuid,
         else:
             # если время ожидания слишком велико, отправляем сообщения в длительное ожидание отправки
             await add_delayed_message_to_wait(text=text_message, status='ready', chat_id=chat_id, delay_time=e.value,
-                                              owner_tg_id=schedule_owner_id, schedule_id=schedule_uuid, account=account)
+                                              owner_tg_id=schedule_owner_id, schedule_uuid=schedule_uuid,
+                                              account=account, schedule_id=schedule_id)
             sended_message.set_message(text=text_message, sending_date=datetime.now(), status=6, channel=chat_id)
     except BadRequest as e:
         logging.debug(f"{chat_id} SENDING ERROR IS {e.NAME} from account:{account.get_name()}")

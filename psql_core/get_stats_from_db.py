@@ -68,6 +68,7 @@ async def get_stats_by_schedule_uuid(schedule_uuid):
 
 
 async def get_stats_by_interval(schedule_owner_id, days_before: int):
+    # noinspection PyTypeChecker
     result = session.query(
         func.count().filter(Message.status == 0).label('sended_message_count'),
         func.count().filter(Message.status == 1).label('forbidden_message_count'),

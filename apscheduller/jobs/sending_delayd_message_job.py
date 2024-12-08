@@ -39,5 +39,6 @@ async def send_one_account_messages(one_account_messages):
                                           app_name=account.name)
     for oam in one_account_messages:
         await send_message_to_tg(text_message=oam.text, account=account, app=app, channels=[oam.chat_id],
-                                 schedule_uuid=oam.schedule_uuid, schedule_owner_id=oam.owner_tg_id)
+                                 schedule_uuid=oam.schedule_uuid, schedule_owner_id=oam.owner_tg_id,
+                                 schedule_id=oam.schedule_id)
         await update_delayed_message_status(message=oam)

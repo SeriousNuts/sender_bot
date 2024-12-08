@@ -40,7 +40,7 @@ async def test_send_message_success(mock_app, mock_message, mock_account):
     channels = ['channel1', 'channel2']
     text_message = "Hello, World!"
 
-    await send_message_to_tg(text_message, mock_app, channels, mock_account, "owner_id", "schedule_uuid")
+    await send_message_to_tg(text_message, mock_app, channels, mock_account, "owner_id", "schedule_uuid", sleep_time=1)
 
     # Проверка, что сообщение было отправлено дважды
     assert mock_app.send_message.call_count == 2
@@ -54,7 +54,8 @@ async def test_send_message_flood_wait(mock_app, mock_message, mock_account):
     channels = ['channel1']
     text_message = "Hello, World!"
 
-    await send_message_to_tg(text_message, mock_app, channels,  mock_account, "owner_id", "schedule_uuid")
+    await send_message_to_tg(text_message, mock_app, channels,  mock_account, "owner_id", "schedule_uuid",
+                             max_wait_time=3, sleep_time=1)
 
     # Проверка, что сообщение было отправлено дважды (первый раз и повторная попытка)
     assert mock_app.send_message.call_count == 2
