@@ -15,7 +15,7 @@ def get_keyboard_delete_sending(tg_owner_id, sending_id):
     )
     change_schedule_interval = InlineKeyboardButton(
         text="Изменить интервал",
-        callback_data=ChangeSendingIntervalCallbackFactory(action="ch_sen_int", tg_owner_id=tg_owner_id,
+        callback_data=ChangeSendingIntervalCallbackFactory(action="ch_sen_int", owner_id=tg_owner_id,
                                                            sending_id=sending_id).pack()
     )
     return InlineKeyboardMarkup(inline_keyboard=[[delete_schedule_btn], [change_schedule_text_btn]])

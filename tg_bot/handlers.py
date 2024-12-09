@@ -151,7 +151,7 @@ async def get_sending_new_text(message: Message, state: FSMContext) -> str:
         await state.clear()
         await message.reply(f"Изменения текста рассылки отменено", reply_markup=buttons.menu_keyboard)
         return ""
-    await change_schedule_text(sending_id=state.get_value("sending_id"), new_text=message.text)
+    await change_schedule_text(sending_id=await state.get_value("sending_id"), new_text=message.text)
     await bot.send_message(message.from_user.id, f"текст изменён")
 
 
