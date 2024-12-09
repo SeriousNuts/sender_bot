@@ -120,6 +120,9 @@ class Schedule(Base):
     owner_tg_id = Column(BigInteger, ForeignKey('users.tg_id'))
     setting = Column(Integer, ForeignKey('settings.id'))
 
+    def set_text(self, text):
+        self.text = text
+
 
 class Setting(Base):
     __tablename__ = 'settings'

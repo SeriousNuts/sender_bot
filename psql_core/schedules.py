@@ -47,3 +47,13 @@ async def insert_schedule(period, message_text, owner_tg_id):
     except Exception as e:
         logging.error(f"insert schedule error {format_error_traceback(error=e)}")
         session.rollback()
+
+
+async def change_schedule_text(sending_id, new_text):
+    schedule = session.query(Schedule).filter(Schedule.id == sending_id).first()
+    schedule.set_text(new_text)
+    try:
+        session.commit()
+    except Exception as e:
+        logging.error(f"change schedule text error {format_error_traceback(error=e)}")
+        session.rollback()

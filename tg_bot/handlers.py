@@ -10,14 +10,15 @@ from aiogram.utils.markdown import hbold
 from MTProto_bot.pyro_scripts import add_account, \
     check_client_code
 from psql_core.accounts import get_accounts_by_tg_id, invert_account_status, insert_account
-from psql_core.schedules import insert_schedule, get_user_schedules, delete_schedule
+from psql_core.schedules import insert_schedule, get_user_schedules, delete_schedule, change_schedule_text
 from psql_core.users import insert_user
 from tg_bot import buttons
 from tg_bot.buttons import *
 from tg_bot.callback_fabrics import get_keyboard_delete_sending, DeleteSendingCallbackFactory, \
     get_menu_inline_keyboard, \
-    GetMyAccountsCallbackFactory, get_manage_account_keyboard, ChangeMyAccountStatusCallbackFactory
-from tg_bot.models.Forms import StartSendingForm, SignUpForm
+    GetMyAccountsCallbackFactory, get_manage_account_keyboard, ChangeMyAccountStatusCallbackFactory, \
+    ChangeSendingTextCallbackFactory
+from tg_bot.models.Forms import StartSendingForm, SignUpForm, ChangeTextForm
 from utills.phone_check import *
 from utills.stats_format import get_period_stats_by_tg_owner_id
 
@@ -69,7 +70,7 @@ async def successful_payment(message: Message):
                            f"Платеж на сумму {message.successful_payment.total_amount // 100} "
                            f"{message.successful_payment.currency} прошел успешно!!!")
 
-
+# кнопка создать рассылку
 @dp.message(F.text.lower() == "создать рассылку")
 async def get_text(message: Message, state: FSMContext) -> None:
     await message.reply(f"Начинаем формирование рассылки для отмены введите /cancel",
@@ -115,7 +116,7 @@ async def command_start_handler(message: Message) -> None:
     await insert_user(message.from_user.id)
     await message.reply(f"Привет, {hbold(message.from_user.full_name)}!", reply_markup=buttons.menu_keyboard)
 
-
+# кнопка мои рассылки
 @dp.message(F.text.lower() == "мои рассылки")
 async def menu(message: Message) -> None:
     schedules = await get_user_schedules(str(message.from_user.id))
@@ -128,14 +129,33 @@ async def menu(message: Message) -> None:
                                                                             tg_owner_id=str(message.from_user.id))
                                    )
 
-
+# удаление рассылки
 @dp.callback_query(DeleteSendingCallbackFactory.filter(F.action == "delete_sending"))
 async def delete_schedule_callback(query: CallbackQuery, callback_data: DeleteSendingCallbackFactory):
     await delete_schedule(owner_tg_id=callback_data.owner_id, sending_id=callback_data.sending_id)
     await bot.send_message(callback_data.owner_id, f"Сообщение удалено")
     await query.answer()
 
+# изменения текста рассылки
+@dp.callback_query(ChangeSendingTextCallbackFactory.filter(F.action == "ch_sen_txt"))
+async def change_schedule_text_callback(query: CallbackQuery, callback_data: ChangeSendingTextCallbackFactory,
+                                        state: FSMContext):
+    await bot.send_message(callback_data.owner_id, f"Введите новый текст\nНажмите /cancel для отмены")
+    await query.answer()
+    await state.update_data(sending_id=callback_data.sending_id)
+    await state.set_state(ChangeTextForm.new_text)
 
+@dp.message(ChangeTextForm.new_text)
+async def get_sending_new_text(message: Message, state: FSMContext) -> str:
+    if message.text == "/cancel":
+        await state.clear()
+        await message.reply(f"Изменения текста рассылки отменено", reply_markup=buttons.menu_keyboard)
+        return ""
+    await change_schedule_text(sending_id=state.get_value("sending_id"), new_text=message.text)
+    await bot.send_message(message.from_user.id, f"текст изменён")
+
+
+# кнопка меню
 @dp.message(F.text.lower() == "menu")
 async def get_my_account(message: Message) -> None:
     stats = await get_period_stats_by_tg_owner_id(days_before=7, tg_onwer_id=message.from_user.id)
@@ -146,7 +166,7 @@ async def get_my_account(message: Message) -> None:
                            reply_markup=get_menu_inline_keyboard(tg_owner_id=message.from_user.id),
                            parse_mode='HTML')
 
-
+# кнопка мои аккаунты
 @dp.callback_query(GetMyAccountsCallbackFactory.filter(F.action == "my_accounts"))
 async def my_account_callback(query: CallbackQuery, callback_data: GetMyAccountsCallbackFactory):
     # получение списка аккаунтов
@@ -164,7 +184,7 @@ async def my_account_callback(query: CallbackQuery, callback_data: GetMyAccounts
                                                                         account_name=a.name),
                                parse_mode='HTML')
 
-
+# изменение статуса аккаунта
 @dp.callback_query(GetMyAccountsCallbackFactory.filter(F.action == "ch_acc_st"))
 async def change_account_status_callback(query: CallbackQuery, callback_data: ChangeMyAccountStatusCallbackFactory):
     status = await invert_account_status(account_id=callback_data.account_id, tg_owner_id=callback_data.owner_id)
@@ -172,7 +192,7 @@ async def change_account_status_callback(query: CallbackQuery, callback_data: Ch
     await query.message.edit_text(text=f"<b>Имя аккаунта:</b> {callback_data.account_name}\n"
                                        f"<b>Статус:</b> {status}", parse_mode='HTML')
 
-
+# инлайн кнопка добавить аккаунт
 @dp.callback_query(F.data == "add_account")
 async def add_account_callback(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_text(
