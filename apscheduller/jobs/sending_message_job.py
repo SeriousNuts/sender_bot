@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 from MTProto_bot.pyro_scripts import *
 from db_models import engine, Schedule
-from psql_core.utills import get_accounts_by_tg_id
+from psql_core.accounts import get_accounts_by_tg_id
 from utills.stats_format import send_schedule_stats_to_user
 
 Session = sessionmaker(bind=engine)

@@ -10,8 +10,13 @@ def get_keyboard_delete_sending(tg_owner_id, sending_id):
     )
     change_schedule_text_btn = InlineKeyboardButton(
         text="Изменить текст рассылки",
-        callback_data=ChangeSendingTextCallbackFactory(action="delete_sending", owner_id=tg_owner_id,
+        callback_data=ChangeSendingTextCallbackFactory(action="ch_sen_txt", owner_id=tg_owner_id,
                                                        sending_id=sending_id).pack()
+    )
+    change_schedule_interval = InlineKeyboardButton(
+        text="Изменить интервал",
+        callback_data=ChangeSendingIntervalCallbackFactory(action="ch_sen_int", owner_id=tg_owner_id,
+                                                           sending_id=sending_id).pack()
     )
     return InlineKeyboardMarkup(inline_keyboard=[[delete_schedule_btn], [change_schedule_text_btn]])
 
@@ -22,7 +27,12 @@ class DeleteSendingCallbackFactory(CallbackData, prefix="delete_sending"):
     sending_id: int
 
 
-class ChangeSendingTextCallbackFactory(CallbackData, prefix="change_sending_text"):
+class ChangeSendingTextCallbackFactory(CallbackData, prefix="ch_sen_txt"):
+    action: str
+    owner_id: int
+    sending_id: int
+
+class ChangeSendingIntervalCallbackFactory(CallbackData, prefix='ch_sen_int'):
     action: str
     owner_id: int
     sending_id: int

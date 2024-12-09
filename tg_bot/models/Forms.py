@@ -13,4 +13,5 @@ class StartSendingForm(StatesGroup):
     text = State()
     interval = State()
 
-
+class ChangeTextForm(StatesGroup):
+    new_text = State()
