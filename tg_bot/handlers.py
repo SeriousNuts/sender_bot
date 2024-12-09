@@ -9,7 +9,9 @@ from aiogram.utils.markdown import hbold
 
 from MTProto_bot.pyro_scripts import add_account, \
     check_client_code
-from psql_core.utills import *
+from psql_core.accounts import get_accounts_by_tg_id, invert_account_status, insert_account
+from psql_core.schedules import insert_schedule, get_user_schedules, delete_schedule
+from psql_core.users import insert_user
 from tg_bot import buttons
 from tg_bot.buttons import *
 from tg_bot.callback_fabrics import get_keyboard_delete_sending, DeleteSendingCallbackFactory, \

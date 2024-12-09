@@ -10,8 +10,10 @@ from pyrogram.errors import FloodWait, BadRequest, Forbidden, SessionPasswordNee
     TakeoutInitDelay, UserDeactivated, UserDeactivatedBan
 
 from db_models import Message
+from psql_core.accounts import deactivate_account
 from psql_core.delayed_messages import add_delayed_message_to_wait
-from psql_core.utills import insert_message, deactivate_account
+from psql_core.messages import insert_message
+
 from utills.format_erros import format_error_traceback
 
 config = configparser.ConfigParser()

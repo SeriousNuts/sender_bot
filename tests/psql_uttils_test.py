@@ -5,8 +5,11 @@ import pytest
 
 from db_models import Schedule, Account
 
-from psql_core.utills import is_user_have_accounts, insert_account, insert_schedule, delete_schedule, insert_message, \
-    get_accounts_by_tg_id, get_user_schedules
+from psql_core.schedules import insert_schedule, delete_schedule, get_user_schedules
+
+from psql_core.accounts import insert_account, get_accounts_by_tg_id
+from psql_core.users import is_user_have_accounts
+from psql_core.messages import insert_message
 
 
 @pytest.fixture
@@ -24,7 +27,7 @@ async def test_user_has_accounts(mock_session):
     # Настраиваем поведение mock-сессии
     mock_session.query.return_value.filter.return_value.scalar.return_value = 1
 
-    with patch('psql_core.utills.session', mock_session):
+    with patch('psql_core.users.session', mock_session):
         result = await is_user_have_accounts(user_tg_id)
 
     assert result is True
@@ -38,7 +41,7 @@ async def test_user_has_no_accounts(mock_session):
     # Настраиваем поведение mock-сессии
     mock_session.query.return_value.filter.return_value.scalar.return_value = 0
 
-    with patch('psql_core.utills.session', mock_session):
+    with patch('psql_core.users.session', mock_session):
         result = await is_user_have_accounts(user_tg_id)
 
     assert result is False
@@ -58,7 +61,7 @@ async def test_insert_account_creates_new_account(mock_session):
     # Настраиваем поведение mock-сессии
     mock_session.query.return_value.filter.return_value.first.return_value = user
 
-    with patch('psql_core.utills.session', mock_session):
+    with patch('psql_core.accounts.session', mock_session):
         await insert_account(tg_id, name, session_string)
 
     # Проверяем, что новый аккаунт был создан и добавлен к пользователю
@@ -85,7 +88,7 @@ async def test_insert_account_no_user(mock_session):
     # Настраиваем поведение mock-сессии так, чтобы пользователь не был найден
     mock_session.query.return_value.filter.return_value.first.return_value = None
 
-    with patch('psql_core.utills.session', mock_session):
+    with patch('psql_core.accounts.session', mock_session):
         await insert_account(tg_id, name, session_string)
 
     # Проверяем, что метод add не был вызван на сессии
@@ -102,7 +105,7 @@ async def test_insert_schedule_creates_new_schedule(mock_session):
     message_text = "Test message"
     owner_tg_id = 12345
 
-    with patch('psql_core.utills.session', mock_session):
+    with patch('psql_core.schedules.session', mock_session):
         await insert_schedule(period, message_text, owner_tg_id)
 
     # Проверяем, что новый объект расписания был создан с правильными параметрами
@@ -127,7 +130,7 @@ async def test_insert_schedule_invalid_period(mock_session):
     message_text = "Test message"
     owner_tg_id = 12345
 
-    with patch('psql_core.utills.session', mock_session):
+    with patch('psql_core.schedules.session', mock_session):
         with pytest.raises(ValueError):  # Предполагаем, что функция должна выбрасывать ValueError
             await insert_schedule(period, message_text, owner_tg_id)
 
@@ -149,7 +152,7 @@ async def test_delete_schedule_success(mock_session):
     # Настраиваем поведение mock-сессии, чтобы возвращать наш объект расписания при запросе
     mock_session.query.return_value.filter.return_value.first.return_value = schedule
 
-    with patch('psql_core.utills.session', mock_session):
+    with patch('psql_core.schedules.session', mock_session):
         await delete_schedule(owner_tg_id, sending_id)
 
     # Проверяем, что метод delete был вызван на сессии с правильным объектом
@@ -168,7 +171,7 @@ async def test_delete_schedule_not_found(mock_session):
     # Настраиваем поведение mock-сессии так, чтобы ничего не возвращалось при запросе
     mock_session.query.return_value.filter.return_value.first.return_value = None
 
-    with patch('psql_core.utills.session', mock_session):
+    with patch('psql_core.schedules.session', mock_session):
         await delete_schedule(owner_tg_id, sending_id)
 
     # Проверяем, что метод delete не был вызван на сессии
@@ -183,7 +186,7 @@ async def test_insert_message_success(mock_session):
     """Тестируем успешное добавление сообщения."""
     message = "Test message"
 
-    with patch('psql_core.utills.session', mock_session):
+    with patch('psql_core.messages.session', mock_session):
         await insert_message(message)
 
     # Проверяем, что метод add был вызван на сессии с правильным сообщением
@@ -201,7 +204,7 @@ async def test_insert_message_failure(mock_session):
     # Настраиваем поведение mock-сессии для выброса исключения при добавлении
     mock_session.add.side_effect = Exception("Database error")
 
-    with patch('psql_core.utills.session', mock_session):
+    with patch('psql_core.messages.session', mock_session):
         with pytest.raises(Exception):  # Ожидаем выброс исключения
             await insert_message(message)
 
@@ -228,13 +231,14 @@ async def test_get_accounts_by_tg_owner_id_success(mock_session):
     # Настраиваем поведение mock-сессии
     mock_session.query.return_value.filter.return_value.all.return_value = [account1, account2]
 
-    with patch('psql_core.utills.session', mock_session):  # Заменяем на psql_core.utils
+    with patch('psql_core.accounts.session', mock_session):  # Заменяем на psql_core.utils
         accounts = await get_accounts_by_tg_id(schedule.owner_tg_id)
 
     # Проверяем, что возвращаемые аккаунты соответствуют ожиданиям
     assert len(accounts) == 2
     assert accounts[0].owner_tg_id == 12345
     assert accounts[1].owner_tg_id == 12345
+
 
 @pytest.mark.asyncio
 async def test_get_accounts_by_schedule_no_accounts(mock_session):
@@ -247,7 +251,7 @@ async def test_get_accounts_by_schedule_no_accounts(mock_session):
     # Настраиваем поведение mock-сессии так, чтобы возвращалось пустое значение
     mock_session.query.return_value.filter.return_value.all.return_value = []
 
-    with patch('psql_core.utills.session', mock_session):  # Заменяем на psql_core.utils
+    with patch('psql_core.accounts.session', mock_session):  # Заменяем на psql_core.utils
         accounts = await get_accounts_by_tg_id(schedule.owner_tg_id)
 
     # Проверяем, что возвращаемый список пустой
@@ -269,7 +273,7 @@ async def test_get_user_schedules_success(mock_session):
     # Настраиваем поведение mock-сессии
     mock_session.query.return_value.filter.return_value.all.return_value = [schedule1, schedule2]
 
-    with patch('psql_core.utills.session', mock_session):  # Заменяем на psql_core.utills
+    with patch('psql_core.schedules.session', mock_session):  # Заменяем на psql_core.utills
         schedules = await get_user_schedules(owner_tg_id)
 
     # Проверяем, что возвращаемые расписания соответствуют ожиданиям
@@ -287,9 +291,8 @@ async def test_get_user_schedules_no_schedules(mock_session):
     # Настраиваем поведение mock-сессии так, чтобы возвращалось пустое значение
     mock_session.query.return_value.filter.return_value.all.return_value = []
 
-    with patch('psql_core.utills.session', mock_session):  # Заменяем на psql_core.utills
+    with patch('psql_core.schedules.session', mock_session):  # Заменяем на psql_core.utills
         schedules = await get_user_schedules(owner_tg_id)
 
     # Проверяем, что возвращаемый список пустой
     assert len(schedules) == 0
-
